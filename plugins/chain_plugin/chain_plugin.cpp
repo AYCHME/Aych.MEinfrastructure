@@ -1223,7 +1223,11 @@ read_only::get_table_by_scope_all_result read_only::get_table_by_scope_all( cons
       if (p.table && itr->table != p.table) {
          continue;
       }
-      result.scope_txt += (itr->scope).to_string() + "\n";
+      result.scope_txt += (itr->scope).to_string() + '\n';
+      if (++count == p.limit) {
+         ++itr;
+         break;
+      }
    }
    return result;
 }
