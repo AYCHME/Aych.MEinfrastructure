@@ -310,7 +310,8 @@ public:
       string      scope_txt; ///< fill lower_bound with this value to fetch more rows
    };
 
-   get_table_by_scope_all_result get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
+   //get_table_by_scope_all_result get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
+   string get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
 
    struct get_currency_balance_params {
       name             code;
