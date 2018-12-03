@@ -797,6 +797,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_token_holders_params, (code)(symbo
 FC_REFLECT( eosio::chain_apis::read_only::get_all_token_contracts_params, (file)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_params, (code)(accounts));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_result, (code)(account)(balance));
+
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(max_supply)(issuer));
