@@ -1248,7 +1248,8 @@ read_only::get_table_by_scope_result read_only::get_table_by_scope( const read_o
    return result;
 }
 
-read_only::get_table_by_scope_all_result read_only::get_table_by_scope_all( const read_only::get_table_by_scope_all_params& p )const {
+//read_only::get_table_by_scope_all_result read_only::get_table_by_scope_all( const read_only::get_table_by_scope_all_params& p )const {
+string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_all_params& p )const {
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
    decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
@@ -1259,12 +1260,13 @@ read_only::get_table_by_scope_all_result read_only::get_table_by_scope_all( cons
 
    unsigned int count = 0;
    auto itr = lower;
-   read_only::get_table_by_scope_all_result result;
+   //read_only::get_table_by_scope_all_result result;
+   string result = "";
    for (; itr != upper; ++itr) {
       if (p.table && itr->table != p.table) {
          continue;
       }
-      result.scope_txt += (itr->scope).to_string() + '\n';
+      result += (itr->scope).to_string() + "\n";
       if (++count == p.limit) {
          ++itr;
          break;
