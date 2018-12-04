@@ -1271,13 +1271,17 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
       if (p.table && itr->table != p.table) {
          continue;
       }
-      string account_name = (itr->scope).to_string();
+      string scope = (itr->scope).to_string();
 
-      const auto& a = db.get_account(itr->scope);
-      string trx_timestamp = string(a.creation_date.to_time_point());
-      int64_t trx_int = a.creation_date.to_time_point().time_since_epoch().count() / 1000;
-
-      result += account_name + "," + trx_timestamp + "," + to_string(trx_int) + "\n";
+      result += scope;
+      if (p.lower_bound == "account_info") {
+         const auto& a = db.get_account(itr->scope);
+         string trx_timestamp = string(a.creation_date.to_time_point());
+         int64_t trx_int = a.creation_date.to_time_point().time_since_epoch().count() / 1000;
+         result += "," + trx_timestamp + "," + to_string(trx_int) ;
+      }
+      
+      result += "\n";
       if (++count == p.limit) {
          ++itr;
          break;
@@ -1285,6 +1289,59 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
    }
    return result;
 }
+
+// vector<name> get_all_accounts() {
+
+//    const auto& d = db.db();
+//    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
+//    decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
+//    decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
+
+//    lower = idx.lower_bound(boost::make_tuple(N(eosio), 0, N(userres)));
+//    upper = idx.lower_bound(boost::make_tuple((uint64_t)(N(eosio)) + 1, 0, 0));
+
+//    unsigned int count = 0;
+//    auto itr = lower;
+
+//    vector<name> all_accounts;
+//    for (; itr != upper; ++itr) {
+//       if (itr->table != N(userres)) {
+//          continue;
+//       }
+//       all_accounts.push_back(itr->scope);
+//    }
+//    return all_accounts;
+// }
+
+// string read_only::get_all_tokens_holders()const {
+//    string result = "";
+   
+//    vector<name> all_accounts = get_all_accounts();
+//    for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
+      
+//       //判断是否是部署过合约
+//       const auto& a = db.get_account(*f_itr);
+//       string contract_deploy_timestamp = string(a.last_code_update);
+//       if (contract_deploy_timestamp == "1970-01-01T00:00:00.000") {
+//          continue;
+//       }
+//       //TODO: 判断是否是发币合约
+
+//       //持有人列表
+//       result += (*f_itr).to_string() + "\n";
+//       for (auto s_itr = all_accounts.cbegin(); s_itr != all_accounts.cend(); s_itr++) {
+
+//          get_currency_balance_params p;
+//          p.code = *f_itr;
+//          p.account =  *s_itr;
+//          vector<asset> v_token;
+//          v_token = get_currency_balance(p);
+
+//       }
+
+//    }
+//    return result;
+// }
 
 vector<asset> read_only::get_currency_balance( const read_only::get_currency_balance_params& p )const {
 
