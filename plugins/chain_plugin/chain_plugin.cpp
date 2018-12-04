@@ -1277,7 +1277,7 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
       string trx_timestamp = string(a.creation_date.to_time_point());
       int64_t trx_int = a.creation_date.to_time_point().time_since_epoch().count() / 1000;
 
-      result += account_name + " " + trx_timestamp + " " + to_string(trx_int) + "\n";
+      result += account_name + "," + trx_timestamp + "," + to_string(trx_int) + "\n";
       if (++count == p.limit) {
          ++itr;
          break;
