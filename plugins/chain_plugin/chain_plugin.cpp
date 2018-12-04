@@ -1248,7 +1248,6 @@ read_only::get_table_by_scope_result read_only::get_table_by_scope( const read_o
    return result;
 }
 
-//read_only::get_table_by_scope_all_result read_only::get_table_by_scope_all( const read_only::get_table_by_scope_all_params& p )const {
 string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_all_params& p )const {
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
@@ -1260,13 +1259,18 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
 
    unsigned int count = 0;
    auto itr = lower;
-   //read_only::get_table_by_scope_all_result result;
    string result = "";
    for (; itr != upper; ++itr) {
       if (p.table && itr->table != p.table) {
          continue;
       }
-      result += (itr->scope).to_string() + "\n";
+      string account_name = (itr->scope).to_string();
+
+      const auto& a = db.get_account(itr->scope);
+      string trx_timestamp = string(a.creation_date.to_time_point());
+      int64_t trx_int = a.creation_date.to_time_point().time_since_epoch().count() / 1000;
+
+      result += account_name + " " + trx_timestamp + " " + to_string(trx_int) + "\n";
       if (++count == p.limit) {
          ++itr;
          break;
