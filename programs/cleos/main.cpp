@@ -326,11 +326,12 @@ fc::variant push_transaction( signed_transaction& trx, int32_t extra_kcpu = 1000
       trx.max_cpu_usage_ms = tx_max_cpu_usage;
       trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
       trx.delay_sec = delaysec;
-   }
 
-   if (!tx_skip_sign) {
-      auto required_keys = determine_required_keys(trx);
-      sign_transaction(trx, required_keys, info.chain_id);
+      if (!tx_skip_sign) {
+         auto required_keys = determine_required_keys(trx);
+         sign_transaction(trx, required_keys, info.chain_id);
+      }
+
    }
 
    if (!tx_dont_broadcast) {
