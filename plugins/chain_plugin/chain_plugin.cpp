@@ -1484,25 +1484,89 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
    return result;
 }
 
-// string read_only::get_all_token_contracts()const {
-//    string result = "";
+vector<name> read_only::get_all_accounts() const {
+
+   const auto& d = db.db();
+   const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
+   decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
+   decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
+
+   lower = idx.lower_bound(boost::make_tuple(N(eosio), 0, N(userres)));
+   upper = idx.lower_bound(boost::make_tuple((uint64_t)(N(eosio)) + 1, 0, 0));
+
+   unsigned int count = 0;
+   auto itr = lower;
+
+   vector<name> all_accounts;
+   for (; itr != upper; ++itr) {
+      if (itr->table != N(userres)) {
+         continue;
+      }
+      all_accounts.push_back(itr->scope);
+   }
+   return all_accounts;
+}
+
+string read_only::get_all_token_contracts(const read_only::get_all_token_contracts_params& p) const {
+   string result = "";
    
-//    vector<name> all_accounts = get_all_accounts();
-//    for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
+   vector<name> all_accounts = get_all_accounts();
+   for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
       
-//       //判断是否是部署过合约
-//       const auto& a = db.get_account(*f_itr);
-//       string contract_deploy_timestamp = string(a.last_code_update);
-//       if (contract_deploy_timestamp == "1970-01-01T00:00:00.000") {
-//          continue;
-//       }
-//       //判断是否是发币合约
+      //判断是否是部署过合约
+      // const auto& a = db.get_account(*f_itr);
+      // string contract_deploy_timestamp = string(a.last_code_update);
+      // if (contract_deploy_timestamp == "1970-01-01T00:00:00.000") {
+      //    continue;
+      // }
+      //判断是否是发币合约
+      get_table_by_scope_all_params p_tmp;
+      p_tmp.code = *f_itr;
+      p_tmp.table = N(stat);
+      p_tmp.limit = p.limit;
+      p_tmp.type = "symbol";
+      string str_token = get_table_by_scope_all(p_tmp); 
+      if (str_token == "") {
+         continue;
+      }
 
+      //获取发币合约相关信息
+      string symbol, creator, num_token_holders, curr_supply, max_supply;
+      creator = (*f_itr).to_string();
+      str_token.pop_back();
+      vector<string> v_symbol;
+      boost::split(v_symbol, str_token, boost::is_any_of("\n"));
+      for (auto s_itr = v_symbol.cbegin(); s_itr != v_symbol.cend(); s_itr++) {
+         //持币人数
+         char tmp[256];
+         vector<name> v_holders = get_all_token_holders(*f_itr);
+         sprintf(tmp, "%lu", v_holders.size());
+         num_token_holders = tmp;
 
+         //最大/当前发行量
+         symbol = *s_itr;
+         get_currency_stats_params p_tmp;
+         p_tmp.code = *f_itr;
+         p_tmp.symbol = *s_itr; 
 
-//    }
-//    return result;
-// }
+         auto stats = get_currency_stats(p_tmp);
+         auto obj = stats.get_object();
+         auto obj_it = obj.find( symbol );
+         if (obj_it == obj.end()) {
+            continue;
+         }
+         auto stat = obj_it->value().as<get_currency_stats_result>();
+         sprintf(tmp, "%lld", stat.supply.get_amount());
+         curr_supply = tmp;
+         sprintf(tmp, "%lld", stat.max_supply.get_amount());
+         max_supply = tmp;
+
+         result += symbol + "," + creator + "," + num_token_holders + "," + curr_supply + "," + max_supply;
+      }
+      result += "\n";
+   }
+   return result;
+}
 
 // string read_only::get_all_tokens_holders()const {
 //    string result = "";
