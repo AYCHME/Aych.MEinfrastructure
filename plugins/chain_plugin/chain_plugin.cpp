@@ -1859,10 +1859,20 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
       if (p.table && itr->table != p.table) {
          continue;
       }
-      string scope = (itr->scope).to_string();
+
+      string scope = "";
+      if (p.type == "symbol") {
+         scope = (symbol(itr->scope)).name();
+      }
+      else if (p.type == "name") {
+         scope = (itr->scope).to_string();
+      }
+      else {
+         scope = (itr->scope).to_string();
+      }
 
       result += scope;
-      if (p.lower_bound == "account_info") {
+      if (p.detail == "account_info") {
          const auto& a = db.get_account(itr->scope);
          string trx_timestamp = string(a.creation_date.to_time_point());
          int64_t trx_int = a.creation_date.to_time_point().time_since_epoch().count() / 1000;
@@ -1899,6 +1909,26 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
 //       all_accounts.push_back(itr->scope);
 //    }
 //    return all_accounts;
+// }
+
+// string read_only::get_all_token_contracts()const {
+//    string result = "";
+   
+//    vector<name> all_accounts = get_all_accounts();
+//    for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
+      
+//       //判断是否是部署过合约
+//       const auto& a = db.get_account(*f_itr);
+//       string contract_deploy_timestamp = string(a.last_code_update);
+//       if (contract_deploy_timestamp == "1970-01-01T00:00:00.000") {
+//          continue;
+//       }
+//       //判断是否是发币合约
+
+
+
+//    }
+//    return result;
 // }
 
 // string read_only::get_all_tokens_holders()const {
