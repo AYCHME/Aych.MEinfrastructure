@@ -308,8 +308,8 @@ public:
    struct get_table_by_scope_all_params {
       name        code; // mandatory
       name        table = 0; // optional, act as filter
-      string      lower_bound; // lower bound of scope, optional
-      string      upper_bound; // upper bound of scope, optional
+      string      type; // type of scope
+      string      detail; // detail info of scope
       uint32_t    limit = 10;
    };
    // struct get_table_by_scope_all_result {
@@ -746,7 +746,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_result, (rows)(more) );
 
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(table)(lower_bound)(upper_bound)(limit)(reverse) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(scope)(table)(payer)(count));
-FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(table)(lower_bound)(upper_bound)(limit) )
+FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(table)(type)(detail)(limit) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
 // FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_params, (code)(accounts));
