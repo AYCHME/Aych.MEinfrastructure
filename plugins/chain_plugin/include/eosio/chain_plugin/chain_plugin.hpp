@@ -380,6 +380,19 @@ public:
    
    vector<get_currency_balance_by_accounts_result> get_currency_balance_by_accounts( const get_currency_balance_by_accounts_params& params )const;
 
+   struct get_currency_balance_by_accounts_params {
+      name             code;
+      vector<name>             accounts;
+   };
+
+   struct get_currency_balance_by_accounts_result {
+      name  code;
+      name  account;
+      vector<asset>  balance;
+   };
+   
+   vector<get_currency_balance_by_accounts_result> get_currency_balance_by_accounts( const get_currency_balance_by_accounts_params& params )const;
+
    struct get_currency_stats_params {
       name           code;
       string         symbol;
