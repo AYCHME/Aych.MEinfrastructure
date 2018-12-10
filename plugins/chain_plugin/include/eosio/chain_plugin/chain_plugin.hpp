@@ -319,6 +319,16 @@ public:
 
    //get_table_by_scope_all_result get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
    string get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
+   
+   struct get_all_token_contracts_params {
+      uint32_t    limit = 10;
+   };
+
+   string get_all_token_contracts(const get_all_token_contracts_params& params) const;
+   
+   vector<name> get_all_token_holders(name code) const;
+
+   vector<name> get_all_accounts() const;
 
    struct get_token_holders_params {
       name        code;
