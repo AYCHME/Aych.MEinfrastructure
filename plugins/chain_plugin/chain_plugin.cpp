@@ -1273,7 +1273,7 @@ vector<name> read_only::get_all_token_holders(name code) const {
 
    vector<name> all_accounts;
    for (; itr != upper; ++itr) {
-      if (itr->table != N(userres)) {
+      if (itr->table != N(accounts)) {
          continue;
       }
       all_accounts.push_back(itr->scope);
@@ -1306,7 +1306,7 @@ vector<name> read_only::get_all_accounts() const {
 
 string read_only::get_all_token_contracts(const read_only::get_all_token_contracts_params& p) const {
    string result = "";
-   
+   unsigned int count = 0; 
    vector<name> all_accounts = get_all_accounts();
    for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
       
@@ -1354,15 +1354,27 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
                continue;
             }
             auto stat = obj_it->value().as<get_currency_stats_result>();
-            sprintf(tmp, "%lld", stat.supply.get_amount());
-            curr_supply = tmp;
-            sprintf(tmp, "%lld", stat.max_supply.get_amount());
-            max_supply = tmp;
+            // sprintf(tmp, "%lld", stat.supply.get_amount());
+            // curr_supply = tmp;
+            // sprintf(tmp, "%lld", stat.max_supply.get_amount());
+            // max_supply = tmp;
+            vector<string> v_tmp;
+            string s_tmp = stat.supply.to_string();
+            boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
+            curr_supply = v_tmp[0];
+
+            v_tmp.clear();
+            s_tmp = stat.max_supply.to_string();
+            boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
+            max_supply = v_tmp[0];
          }
          catch(...) {
             continue;
          }
-         result += symbol + "," + creator + "," + num_token_holders + "," + curr_supply + "," + max_supply;
+         result += symbol + "," + creator + "," + num_token_holders + "," + curr_supply + "," + max_supply + "\n";
+         if (++count == p.limit) {
+            break;
+         }
       }
       result += "\n";
    }
