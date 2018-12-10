@@ -1901,7 +1901,8 @@ vector<name> read_only::get_all_token_holders(const get_currency_stats_params& p
    decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
    decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
 
-   uint64_t scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) >> 8 );
+   // uint64_t scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) >> 8 );
+   name scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) );
    lower = idx.lower_bound(boost::make_tuple(p.code, scope, N(accounts)));
    upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, scope, 0));
 
@@ -1954,12 +1955,12 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
       //    continue;
       // }
       //判断是否是发币合约
-      get_table_by_scope_all_params p_tmp;
-      p_tmp.code = *f_itr;
-      p_tmp.table = N(stat);
-      p_tmp.limit = p.limit;
-      p_tmp.type = "symbol";
-      string str_token = get_table_by_scope_all(p_tmp); 
+      get_table_by_scope_all_params t_tmp;
+      t_tmp.code = *f_itr;
+      t_tmp.table = N(stat);
+      t_tmp.limit = p.limit;
+      t_tmp.type = "symbol";
+      string str_token = get_table_by_scope_all(t_tmp); 
       if (str_token == "") {
          continue;
       }
@@ -1992,19 +1993,17 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
                continue;
             }
             auto stat = obj_it->value().as<get_currency_stats_result>();
-            // sprintf(tmp, "%lld", stat.supply.get_amount());
-            // curr_supply = tmp;
-            // sprintf(tmp, "%lld", stat.max_supply.get_amount());
-            // max_supply = tmp;
-            vector<string> v_tmp;
+            // vector<string> v_tmp;
             string s_tmp = stat.supply.to_string();
-            boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
-            curr_supply = v_tmp[0];
+            // boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
+            curr_supply = s_tmp.substr(0, s_tmp.find_first_of(" "));
 
-            v_tmp.clear();
+            // v_tmp.clear();
             s_tmp = stat.max_supply.to_string();
-            boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
-            max_supply = v_tmp[0];
+            // boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
+            // max_supply = v_tmp[0];
+            max_supply = s_tmp.substr(0, s_tmp.find_first_of(" "));
+
          }
          catch(...) {
             continue;
