@@ -312,9 +312,9 @@ public:
       string      upper_bound; // upper bound of scope, optional
       uint32_t    limit = 10;
    };
-   struct get_table_by_scope_all_result {
-      string      scope_txt; ///< fill lower_bound with this value to fetch more rows
-   };
+   // struct get_table_by_scope_all_result {
+   //    string      scope_txt; ///< fill lower_bound with this value to fetch more rows
+   // };
 
    //get_table_by_scope_all_result get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
    string get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
@@ -326,6 +326,19 @@ public:
    };
 
    vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
+
+   struct get_currency_balance_by_accounts_params {
+      name             code;
+      vector<name>             accounts;
+   };
+
+   struct get_currency_balance_by_accounts_result {
+      name  code;
+      name  account;
+      vector<asset>  balance;
+   };
+   
+   vector<get_currency_balance_by_accounts_result> get_currency_balance_by_accounts( const get_currency_balance_by_accounts_params& params )const;
 
    struct get_currency_stats_params {
       name           code;
@@ -731,8 +744,9 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(tabl
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(scope)(table)(payer)(count));
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(table)(lower_bound)(upper_bound)(limit) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
-FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
-
+// FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
+FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_params, (code)(accounts));
+FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_result, (code)(account)(balance));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(max_supply)(issuer));
