@@ -1321,6 +1321,36 @@ vector<asset> read_only::get_currency_balance( const read_only::get_currency_bal
    return results;
 }
 
+vector<read_only::get_currency_balance_by_accounts_result> read_only::get_currency_balance_by_accounts( const read_only::get_currency_balance_by_accounts_params& p )const {
+
+   vector<read_only::get_currency_balance_by_accounts_result> results;
+   for (auto itr = p.accounts.begin(); itr != p.accounts.end(); itr++) {
+      
+      vector<asset> balance;
+      walk_key_value_table(p.code, *itr, N(accounts), [&](const key_value_object& obj){
+         EOS_ASSERT( obj.value.size() >= sizeof(asset), chain::asset_type_exception, "Invalid data on table");
+
+         asset cursor;
+         fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
+         fc::raw::unpack(ds, cursor);
+
+         EOS_ASSERT( cursor.get_symbol().valid(), chain::asset_type_exception, "Invalid asset");
+
+         balance.emplace_back(cursor);
+
+         // return false if we are looking for one and found it, true otherwise
+         return true;
+      });
+      read_only::get_currency_balance_by_accounts_result tmp;
+      tmp.code = p.code;
+      tmp.account = name(*itr);
+      tmp.balance = balance;
+      results.emplace_back(tmp);
+   }
+
+   return results;
+}
+
 fc::variant read_only::get_currency_stats( const read_only::get_currency_stats_params& p )const {
    fc::mutable_variant_object results;
 
