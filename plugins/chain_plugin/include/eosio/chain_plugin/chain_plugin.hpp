@@ -326,7 +326,6 @@ public:
 
    string get_all_token_contracts(const get_all_token_contracts_params& params) const;
    
-   vector<name> get_all_token_holders(name code) const;
 
    vector<name> get_all_accounts() const;
 
