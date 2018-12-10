@@ -1537,18 +1537,19 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
       vector<string> v_symbol;
       boost::split(v_symbol, str_token, boost::is_any_of("\n"));
       for (auto s_itr = v_symbol.cbegin(); s_itr != v_symbol.cend(); s_itr++) {
-         //持币人数
-         char tmp[256];
-         vector<name> v_holders = get_all_token_holders(*f_itr);
-         sprintf(tmp, "%lu", v_holders.size());
-         num_token_holders = tmp;
 
-         //最大/当前发行量
          symbol = *s_itr;
          get_currency_stats_params p_tmp;
          p_tmp.code = *f_itr;
          p_tmp.symbol = *s_itr; 
 
+         //持币人数
+         char tmp[256];
+         vector<name> v_holders = get_all_token_holders(p_tmp);
+         sprintf(tmp, "%lu", v_holders.size());
+         num_token_holders = tmp;
+
+         //最大/当前发行量
          try {
             auto stats = get_currency_stats(p_tmp);
             auto obj = stats.get_object();
