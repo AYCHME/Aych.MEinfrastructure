@@ -1226,7 +1226,13 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
 
       string scope = "";
       if (p.type == "symbol") {
-         scope = symbol(uint64_t(itr->scope)).name();
+         uint64_t v = uint64_t(itr->scope);
+         // v >>= 8;
+         while (v > 0) {
+            char c = v & 0xFF;
+            scope += c;
+            v >>= 8;
+         } 
       }
       else if (p.type == "name") {
          scope = (itr->scope).to_string();
