@@ -1394,18 +1394,22 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
          p_tmp.code = *f_itr;
          p_tmp.symbol = *s_itr; 
 
-         auto stats = get_currency_stats(p_tmp);
-         auto obj = stats.get_object();
-         auto obj_it = obj.find( symbol );
-         if (obj_it == obj.end()) {
+         try {
+            auto stats = get_currency_stats(p_tmp);
+            auto obj = stats.get_object();
+            auto obj_it = obj.find( symbol );
+            if (obj_it == obj.end()) {
+               continue;
+            }
+            auto stat = obj_it->value().as<get_currency_stats_result>();
+            sprintf(tmp, "%lld", stat.supply.get_amount());
+            curr_supply = tmp;
+            sprintf(tmp, "%lld", stat.max_supply.get_amount());
+            max_supply = tmp;
+         }
+         catch(...) {
             continue;
          }
-         auto stat = obj_it->value().as<get_currency_stats_result>();
-         sprintf(tmp, "%lld", stat.supply.get_amount());
-         curr_supply = tmp;
-         sprintf(tmp, "%lld", stat.max_supply.get_amount());
-         max_supply = tmp;
-
          result += symbol + "," + creator + "," + num_token_holders + "," + curr_supply + "," + max_supply;
       }
       result += "\n";
