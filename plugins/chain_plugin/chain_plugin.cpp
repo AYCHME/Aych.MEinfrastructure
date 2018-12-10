@@ -1862,7 +1862,7 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
 
       string scope = "";
       if (p.type == "symbol") {
-         scope = (symbol(itr->scope)).name();
+         scope = symbol(uint64_t(itr->scope)).name();
       }
       else if (p.type == "name") {
          scope = (itr->scope).to_string();
