@@ -1258,15 +1258,16 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
    return result;
 }
 
-vector<name> read_only::get_all_token_holders(name code) const {
+vector<name> read_only::get_all_token_holders(const get_currency_stats_params& p) const {
 
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
    decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
    decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
 
-   lower = idx.lower_bound(boost::make_tuple(code, 0, N(accounts)));
-   upper = idx.lower_bound(boost::make_tuple((uint64_t)code + 1, 0, 0));
+   uint64_t scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) >> 8 );
+   lower = idx.lower_bound(boost::make_tuple(p.code, scope, N(accounts)));
+   upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, scope, 0));
 
    unsigned int count = 0;
    auto itr = lower;
@@ -1334,18 +1335,19 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
       vector<string> v_symbol;
       boost::split(v_symbol, str_token, boost::is_any_of("\n"));
       for (auto s_itr = v_symbol.cbegin(); s_itr != v_symbol.cend(); s_itr++) {
-         //持币人数
-         char tmp[256];
-         vector<name> v_holders = get_all_token_holders(*f_itr);
-         sprintf(tmp, "%lu", v_holders.size());
-         num_token_holders = tmp;
 
-         //最大/当前发行量
          symbol = *s_itr;
          get_currency_stats_params p_tmp;
          p_tmp.code = *f_itr;
          p_tmp.symbol = *s_itr; 
 
+         //持币人数
+         char tmp[256];
+         vector<name> v_holders = get_all_token_holders(p_tmp);
+         sprintf(tmp, "%lu", v_holders.size());
+         num_token_holders = tmp;
+
+         //最大/当前发行量
          try {
             auto stats = get_currency_stats(p_tmp);
             auto obj = stats.get_object();

@@ -319,7 +319,6 @@ public:
 
    string get_all_token_contracts(const get_all_token_contracts_params& params) const;
    
-   vector<name> get_all_token_holders(name code) const;
 
    vector<name> get_all_accounts() const;
 
@@ -357,6 +356,8 @@ public:
    };
 
    fc::variant get_currency_stats( const get_currency_stats_params& params )const;
+
+   vector<name> get_all_token_holders(const get_currency_stats_params& params) const;
 
    struct get_producers_params {
       bool        json = false;
