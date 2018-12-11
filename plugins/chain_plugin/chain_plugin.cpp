@@ -1324,12 +1324,17 @@ unsigned int read_only::get_num_token_holders_by_symbol(const get_currency_stats
       t_tmp.account = itr->scope;
       t_tmp.symbol = p.symbol;
 
-      auto v_balance = get_currency_balance(t_tmp); 
-      if (0 == v_balance.size()) {
-         continue;
+      try {
+         auto v_balance = get_currency_balance(t_tmp); 
+         if (0 == v_balance.size()) {
+            continue;
+         }
+         else {
+            count ++;
+         }
       }
-      else {
-         count ++;
+      catch(...){
+         continue;
       }
 
    }
