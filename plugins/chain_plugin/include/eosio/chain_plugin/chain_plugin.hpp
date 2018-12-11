@@ -335,6 +335,7 @@ public:
    };
 
    vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
+   vector<asset> get_currency_balance_without_assert( const get_currency_balance_params& params )const;
 
    struct get_currency_balance_by_accounts_params {
       name             code;
@@ -363,7 +364,8 @@ public:
 
    fc::variant get_currency_stats( const get_currency_stats_params& params )const;
 
-   unsigned int get_num_token_holders_by_symbol(const get_currency_stats_params& params) const;
+   unsigned int get_num_token_holders_by_symbol(const get_currency_stats_params& params, bool b_skip) const;
+
 
    struct get_producers_params {
       bool        json = false;
