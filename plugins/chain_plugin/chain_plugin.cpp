@@ -1439,7 +1439,7 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
          //持币人数
          char tmp[256];
          unsigned int ui_num_holders = get_num_token_holders_by_symbol(p_tmp, need_skip);
-         sprintf(tmp, "%lu", ui_num_holders);
+         sprintf(tmp, "%u", ui_num_holders);
          num_token_holders = tmp;
 
          //最大/当前发行量
