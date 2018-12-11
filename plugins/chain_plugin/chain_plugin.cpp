@@ -1408,12 +1408,17 @@ vector<name> read_only::get_all_accounts() const {
       t_tmp.account = itr->scope;
       t_tmp.symbol = p.symbol;
 
-      auto v_balance = get_currency_balance(t_tmp); 
-      if (0 == v_balance.size()) {
-         continue;
+      try {
+         auto v_balance = get_currency_balance(t_tmp); 
+         if (0 == v_balance.size()) {
+            continue;
+         }
+         else {
+            count ++;
+         }
       }
-      else {
-         count ++;
+      catch(...){
+         continue;
       }
 
    }
