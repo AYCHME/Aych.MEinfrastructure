@@ -1258,29 +1258,41 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
    return result;
 }
 
-vector<name> read_only::get_all_token_holders(const get_currency_stats_params& p) const {
+unsigned int read_only::get_num_token_holders_by_symbol(const get_currency_stats_params& p) const {
 
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
    decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
    decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
 
-   // uint64_t scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) >> 8 );
-   name scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) );
-   lower = idx.lower_bound(boost::make_tuple(p.code, scope, N(accounts)));
-   upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, scope, 0));
+   uint64_t scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) >> 8 );
+   lower = idx.lower_bound(boost::make_tuple(p.code, 0, N(accounts)));
+   upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, 0, 0));
 
    unsigned int count = 0;
    auto itr = lower;
 
-   vector<name> all_accounts;
+   // vector<name> all_accounts;
+   get_currency_balance_params t_tmp;
+   t_tmp.code = p.code;
    for (; itr != upper; ++itr) {
       if (itr->table != N(accounts)) {
          continue;
       }
-      all_accounts.push_back(itr->scope);
+      // all_accounts.push_back(itr->scope);
+      t_tmp.account = itr->scope;
+      t_tmp.symbol = p.symbol;
+
+      auto v_balance = get_currency_balance(t_tmp); 
+      if (0 == v_balance.size()) {
+         continue;
+      }
+      else {
+         count ++;
+      }
+
    }
-   return all_accounts;
+   return count;
 }
 
 vector<name> read_only::get_all_accounts() const {
@@ -1344,8 +1356,8 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
 
          //持币人数
          char tmp[256];
-         vector<name> v_holders = get_all_token_holders(p_tmp);
-         sprintf(tmp, "%lu", v_holders.size());
+         unsigned int ui_num_holders = get_num_token_holders_by_symbol(p_tmp);
+         sprintf(tmp, "%lu", ui_num_holders);
          num_token_holders = tmp;
 
          //最大/当前发行量
@@ -1357,15 +1369,10 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
                continue;
             }
             auto stat = obj_it->value().as<get_currency_stats_result>();
-            // vector<string> v_tmp;
             string s_tmp = stat.supply.to_string();
-            // boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
             curr_supply = s_tmp.substr(0, s_tmp.find_first_of(" "));
 
-            // v_tmp.clear();
             s_tmp = stat.max_supply.to_string();
-            // boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
-            // max_supply = v_tmp[0];
             max_supply = s_tmp.substr(0, s_tmp.find_first_of(" "));
 
          }

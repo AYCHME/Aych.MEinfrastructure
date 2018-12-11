@@ -357,7 +357,7 @@ public:
 
    fc::variant get_currency_stats( const get_currency_stats_params& params )const;
 
-   vector<name> get_all_token_holders(const get_currency_stats_params& params) const;
+   unsigned int get_num_token_holders_by_symbol(const get_currency_stats_params& params) const;
 
    struct get_producers_params {
       bool        json = false;
