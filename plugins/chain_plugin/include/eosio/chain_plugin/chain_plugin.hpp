@@ -321,6 +321,7 @@ public:
    string get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
    
    struct get_all_token_contracts_params {
+      string      file;
       uint32_t    limit = 10;
    };
 
