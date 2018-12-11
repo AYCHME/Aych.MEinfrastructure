@@ -320,6 +320,7 @@ public:
    string get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
    
    struct get_all_token_contracts_params {
+      string      file;
       uint32_t    limit = 10;
    };
 
@@ -758,7 +759,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(table)(type)(detail)(limit) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
 // FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
-FC_REFLECT( eosio::chain_apis::read_only::get_all_token_contracts_params, (limit));
+FC_REFLECT( eosio::chain_apis::read_only::get_all_token_contracts_params, (file)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_params, (code)(accounts));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_result, (code)(account)(balance));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
