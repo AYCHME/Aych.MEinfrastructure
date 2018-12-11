@@ -1299,14 +1299,43 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
    return result;
 }
 
-unsigned int read_only::get_num_token_holders_by_symbol(const get_currency_stats_params& p) const {
+vector<asset> read_only::get_currency_balance_without_assert( const read_only::get_currency_balance_params& p )const {
+
+   const abi_def abi = eosio::chain_apis::get_abi( db, p.code );
+   auto table_type = get_table_type( abi, "accounts" );
+
+   vector<asset> results;
+   walk_key_value_table(p.code, p.account, N(accounts), [&](const key_value_object& obj){
+      if( obj.value.size() >= sizeof(asset)) {
+         return true;
+      }
+
+      asset cursor;
+      fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
+      fc::raw::unpack(ds, cursor);
+
+      if ( cursor.get_symbol().valid()){
+         return true;
+      }
+
+      if( !p.symbol || boost::iequals(cursor.symbol_name(), *p.symbol) ) {
+        results.emplace_back(cursor);
+      }
+
+      // return false if we are looking for one and found it, true otherwise
+      return !(p.symbol && boost::iequals(cursor.symbol_name(), *p.symbol));
+   });
+
+   return results;
+}
+
+unsigned int read_only::get_num_token_holders_by_symbol(const get_currency_stats_params& p, bool b_skip) const {
 
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
    decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
    decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
 
-   uint64_t scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) >> 8 );
    lower = idx.lower_bound(boost::make_tuple(p.code, 0, N(accounts)));
    upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, 0, 0));
 
@@ -1316,16 +1345,20 @@ unsigned int read_only::get_num_token_holders_by_symbol(const get_currency_stats
    // vector<name> all_accounts;
    get_currency_balance_params t_tmp;
    t_tmp.code = p.code;
+   t_tmp.symbol = p.symbol;
    for (; itr != upper; ++itr) {
       if (itr->table != N(accounts)) {
          continue;
       }
+      if (b_skip) {
+         count ++;
+         continue;
+      }
       // all_accounts.push_back(itr->scope);
       t_tmp.account = itr->scope;
-      t_tmp.symbol = p.symbol;
 
       try {
-         auto v_balance = get_currency_balance(t_tmp); 
+         auto v_balance = get_currency_balance_without_assert(t_tmp); 
          if (0 == v_balance.size()) {
             continue;
          }
@@ -1393,6 +1426,7 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
       str_token.pop_back();
       vector<string> v_symbol;
       boost::split(v_symbol, str_token, boost::is_any_of("\n"));
+      bool need_skip = v_symbol.size() == 1;
       for (auto s_itr = v_symbol.cbegin(); s_itr != v_symbol.cend(); s_itr++) {
 
          symbol = *s_itr;
@@ -1402,7 +1436,7 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
 
          //持币人数
          char tmp[256];
-         unsigned int ui_num_holders = get_num_token_holders_by_symbol(p_tmp);
+         unsigned int ui_num_holders = get_num_token_holders_by_symbol(p_tmp, need_skip);
          sprintf(tmp, "%lu", ui_num_holders);
          num_token_holders = tmp;
 
