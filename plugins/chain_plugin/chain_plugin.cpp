@@ -30,6 +30,8 @@
 #include <fc/variant.hpp>
 #include <signal.h>
 #include <cstdlib>
+#include <fstream>
+#include <iostream>
 
 namespace eosio {
 
@@ -1424,6 +1426,12 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
          }
       }
       result += "\n";
+   }
+   if (p.file != "") {
+         std::ofstream outfile;
+         outfile.open(p.file);
+         outfile  << result;
+         outfile.close();
    }
    return result;
 }
