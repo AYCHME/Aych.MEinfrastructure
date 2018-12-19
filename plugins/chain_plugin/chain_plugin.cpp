@@ -1293,12 +1293,14 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
       if (itr->table != N(accounts)) {
          continue;
       }
+      /* 如果只发行了一种代币，那么获取到持币人后立即返回
       if (b_skip) {
          count ++;
          result += (itr->scope).to_string();
          result += '\n';
          continue;
       }
+      */
       // all_accounts.push_back(itr->scope);
       t_tmp1.account = itr->scope;
 
