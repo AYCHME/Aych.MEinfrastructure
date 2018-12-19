@@ -1539,7 +1539,9 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
          }
          else {
             count ++;
-            result += (itr->scope).to_string();
+            string s_tmp = v_balance[0].to_string();
+            string curr = s_tmp.substr(0, s_tmp.find_first_of(" "));
+            result += (itr->scope).to_string() + ',' + curr;
          }
       }
       catch(...){
