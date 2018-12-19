@@ -1286,7 +1286,7 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
    get_currency_balance_params t_tmp1;
    t_tmp1.code = p.code;
    t_tmp1.symbol = p.symbol;
-   for (; itr != upper; ++itr, result += '\n') {
+   for (; itr != upper; ++itr) {
       if (p.limit <= count) {
          break;
       }
@@ -1296,6 +1296,7 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
       if (b_skip) {
          count ++;
          result += (itr->scope).to_string();
+         result += '\n';
          continue;
       }
       // all_accounts.push_back(itr->scope);
@@ -1311,6 +1312,7 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
             string s_tmp = v_balance[0].to_string();
             string curr = s_tmp.substr(0, s_tmp.find_first_of(" "));
             result += (itr->scope).to_string() + ',' + curr;
+            result += '\n';
          }
       }
       catch(...){
@@ -1558,7 +1560,6 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
             break;
          }
       }
-      result += "\n";
    }
    if (p.file != "") {
          std::ofstream outfile;
