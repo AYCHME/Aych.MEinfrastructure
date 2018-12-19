@@ -1257,6 +1257,73 @@ read_only::get_table_by_scope_result read_only::get_table_by_scope( const read_o
    return result;
 }
 
+string read_only::get_token_holders( const read_only::get_token_holders_params& p )const {
+
+   string result = "";
+   const auto& d = db.db();
+   const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
+   decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
+   decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
+
+   lower = idx.lower_bound(boost::make_tuple(p.code, 0, N(accounts)));
+   upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, 0, 0));
+
+   unsigned int count = 0;
+   auto itr = lower;
+
+   //判断是否是发币合约
+   get_table_by_scope_all_params t_tmp;
+   t_tmp.code = p.code;
+   t_tmp.table = N(stat);
+   t_tmp.limit = p.limit;
+   t_tmp.type = "symbol";
+   string str_token = get_table_by_scope_all(t_tmp); 
+   if (str_token == "") {
+      return result;
+   }
+
+   //获取发币合约相关信息
+   str_token.pop_back();   //除去末尾换行符
+   vector<string> v_symbol;
+   boost::split(v_symbol, str_token, boost::is_any_of("\n"));
+   bool b_skip = v_symbol.size() == 1;
+
+
+   // vector<name> all_accounts;
+   get_currency_balance_params t_tmp1;
+   t_tmp1.code = p.code;
+   t_tmp1.symbol = p.symbol;
+   for (; itr != upper; ++itr, result += '\n') {
+      if (itr->table != N(accounts)) {
+         continue;
+      }
+      if (b_skip) {
+         count ++;
+         result += (itr->scope).to_string();
+         continue;
+      }
+      // all_accounts.push_back(itr->scope);
+      t_tmp1.account = itr->scope;
+
+      try {
+         auto v_balance = get_currency_balance_without_assert(t_tmp1); 
+         if (0 == v_balance.size()) {
+            continue;
+         }
+         else {
+            count ++;
+            result += (itr->scope).to_string();
+         }
+      }
+      catch(...){
+         continue;
+      }
+
+   }
+   return result;
+}
+
+
 string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_all_params& p )const {
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
@@ -1454,7 +1521,7 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
       //获取发币合约相关信息
       string symbol, creator, num_token_holders, curr_supply, max_supply;
       creator = (*f_itr).to_string();
-      str_token.pop_back();
+      str_token.pop_back();   //除去末尾换行符
       vector<string> v_symbol;
       boost::split(v_symbol, str_token, boost::is_any_of("\n"));
       bool need_skip = v_symbol.size() == 1;
