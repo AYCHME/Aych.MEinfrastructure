@@ -1521,6 +1521,9 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
    t_tmp1.code = p.code;
    t_tmp1.symbol = p.symbol;
    for (; itr != upper; ++itr, result += '\n') {
+      if (p.limit <= count) {
+         break;
+      }
       if (itr->table != N(accounts)) {
          continue;
       }
@@ -1539,7 +1542,7 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
          }
          else {
             count ++;
-            string s_tmp = v_balance[0].to_string();
+            string s_tmp = (asset(v_balance[0])).to_string();
             string curr = s_tmp.substr(0, s_tmp.find_first_of(" "));
             result += (itr->scope).to_string() + ',' + curr;
          }
