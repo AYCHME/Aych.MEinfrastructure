@@ -1308,7 +1308,7 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
          }
          else {
             count ++;
-            string s_tmp = (asset(v_balance[0])).to_string();
+            string s_tmp = v_balance[0].to_string();
             string curr = s_tmp.substr(0, s_tmp.find_first_of(" "));
             result += (itr->scope).to_string() + ',' + curr;
          }
@@ -1380,7 +1380,7 @@ vector<asset> read_only::get_currency_balance_without_assert( const read_only::g
 
    vector<asset> results;
    walk_key_value_table(p.code, p.account, N(accounts), [&](const key_value_object& obj){
-      if( obj.value.size() >= sizeof(asset)) {
+      if( obj.value.size() < sizeof(asset)) {
          return true;
       }
 
@@ -1388,7 +1388,7 @@ vector<asset> read_only::get_currency_balance_without_assert( const read_only::g
       fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
       fc::raw::unpack(ds, cursor);
 
-      if ( cursor.get_symbol().valid()){
+      if ( !cursor.get_symbol().valid()){
          return true;
       }
 
@@ -1548,36 +1548,6 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
    }
    return result;
 }
-
-// string read_only::get_all_tokens_holders()const {
-//    string result = "";
-   
-//    vector<name> all_accounts = get_all_accounts();
-//    for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
-      
-//       //判断是否是部署过合约
-//       const auto& a = db.get_account(*f_itr);
-//       string contract_deploy_timestamp = string(a.last_code_update);
-//       if (contract_deploy_timestamp == "1970-01-01T00:00:00.000") {
-//          continue;
-//       }
-//       //TODO: 判断是否是发币合约
-
-//       //持有人列表
-//       result += (*f_itr).to_string() + "\n";
-//       for (auto s_itr = all_accounts.cbegin(); s_itr != all_accounts.cend(); s_itr++) {
-
-//          get_currency_balance_params p;
-//          p.code = *f_itr;
-//          p.account =  *s_itr;
-//          vector<asset> v_token;
-//          v_token = get_currency_balance(p);
-
-//       }
-
-//    }
-//    return result;
-// }
 
 vector<asset> read_only::get_currency_balance( const read_only::get_currency_balance_params& p )const {
 
