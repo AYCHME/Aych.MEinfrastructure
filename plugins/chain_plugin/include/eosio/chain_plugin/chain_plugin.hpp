@@ -328,6 +328,12 @@ public:
 
    string get_token_holders( const get_token_holders_params& params )const;
    
+   
+   struct get_eos_holders_params {
+      bool        all = false;
+      uint32_t    limit = 10;
+   }; 
+   string get_eos_holders(const get_eos_holders_params& params)const; 
 
    struct get_all_token_contracts_params {
       string      file;

@@ -1400,6 +1400,7 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
          s_tmp = sum.to_string();
          string all = s_tmp.substr(0, s_tmp.find_first_of(" "));
          result += "," + all + "\n";
+
       }
       
    }
