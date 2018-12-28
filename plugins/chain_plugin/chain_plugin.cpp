@@ -1332,6 +1332,9 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
          if (!b_delegate_to_self) {
             result += ",0.0000,0.0000"; 
          }
+         else {
+            result += ",0.0000"; 
+         }
 
          /*
          // 自我抵押
@@ -1400,6 +1403,7 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
          s_tmp = sum.to_string();
          string all = s_tmp.substr(0, s_tmp.find_first_of(" "));
          result += "," + all + "\n";
+
 
       }
       
