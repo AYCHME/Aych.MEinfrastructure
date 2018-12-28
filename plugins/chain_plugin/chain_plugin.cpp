@@ -1261,7 +1261,8 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
       const auto& d = db.db();
 
       vector<name> all_accounts = get_all_accounts();
-      for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
+      unsigned int count = 0;
+      for (auto f_itr = all_accounts.cbegin(); count < params.limit && f_itr != all_accounts.cend(); f_itr ++, count ++) {
          name account_name = (*f_itr);
          result += account_name.to_string();
          asset liquid, self_delegate_bw, unstake, delegate_to_others;
