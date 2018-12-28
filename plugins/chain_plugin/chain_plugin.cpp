@@ -1361,7 +1361,7 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
          result += "," + total;
 
          asset sum = liquid + self_delegate_bw + unstake + delegate_to_others;
-         string s_tmp = sum.to_string();
+         s_tmp = sum.to_string();
          string all = s_tmp.substr(0, s_tmp.find_first_of(" "));
          result += "," + all + "\n";
       }
