@@ -274,6 +274,7 @@ public:
       string      encode_type{"dec"}; //dec, hex , default=dec
       optional<bool>  reverse;
       optional<bool>  show_payer; // show RAM pyer
+      optional<bool>  all = false;
     };
 
    struct get_table_rows_result {
@@ -327,6 +328,12 @@ public:
 
    string get_token_holders( const get_token_holders_params& params )const;
    
+   
+   struct get_eos_holders_params {
+      bool        all = false;
+      uint32_t    limit = 10;
+   }; 
+   string get_eos_holders(const get_eos_holders_params& params)const; 
 
    struct get_all_token_contracts_params {
       string      file;
@@ -519,7 +526,7 @@ public:
             auto cur_time = fc::time_point::now();
             auto end_time = cur_time + fc::microseconds(1000 * 10); /// 10ms max time
             vector<char> data;
-            for( unsigned int count = 0; cur_time <= end_time && count < p.limit && itr != end_itr; ++itr, cur_time = fc::time_point::now() ) {
+            for( unsigned int count = 0; (cur_time <= end_time || p.all) && count < p.limit && itr != end_itr; ++itr, cur_time = fc::time_point::now() ) {
                const auto* itr2 = d.find<chain::key_value_object, chain::by_scope_primary>( boost::make_tuple(t_id->id, itr->primary_key) );
                if( itr2 == nullptr ) continue;
                copy_inline_row(*itr2, data);
@@ -597,7 +604,7 @@ public:
             auto cur_time = fc::time_point::now();
             auto end_time = cur_time + fc::microseconds(1000 * 10); /// 10ms max time
             vector<char> data;
-            for( unsigned int count = 0; cur_time <= end_time && count < p.limit && itr != end_itr; ++count, ++itr, cur_time = fc::time_point::now() ) {
+            for( unsigned int count = 0; (cur_time <= end_time || p.all) && count < p.limit && itr != end_itr; ++count, ++itr, cur_time = fc::time_point::now() ) {
                copy_inline_row(*itr, data);
 
                fc::variant data_var;
@@ -784,7 +791,7 @@ FC_REFLECT(eosio::chain_apis::read_only::get_block_header_state_params, (block_n
 
 FC_REFLECT( eosio::chain_apis::read_write::push_transaction_results, (transaction_id)(processed) )
 
-FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_params, (json)(code)(scope)(table)(table_key)(lower_bound)(upper_bound)(limit)(key_type)(index_position)(encode_type)(reverse)(show_payer) )
+FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_params, (json)(code)(scope)(table)(table_key)(lower_bound)(upper_bound)(limit)(key_type)(index_position)(encode_type)(reverse)(show_payer)(all) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_result, (rows)(more) );
 
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(table)(lower_bound)(upper_bound)(limit)(reverse) )
@@ -792,6 +799,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(table)(type)(detail)(limit) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
 // FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
+FC_REFLECT( eosio::chain_apis::read_only::get_eos_holders_params, (all)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_token_holders_params, (code)(symbol)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_all_token_contracts_params, (file)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_params, (code)(accounts));
