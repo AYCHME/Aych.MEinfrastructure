@@ -1286,6 +1286,9 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
                }
             }
          }
+         else {
+            result += ",0.0000"; 
+         }
 
          // 自我抵押
          t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, account_name, N(delband) ));
@@ -1307,6 +1310,9 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
                
                result += "," + cpu_amount + "," + net_weight;
             }
+         }
+         else {
+            result += ",0.0000,0.0000"; 
          }
 
          // 正在赎回
@@ -1330,6 +1336,9 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
                result += "," + cpu_amount + "," + net_weight;
             }
          }
+         else {
+            result += ",0.0000,0.0000"; 
+         }
 
          // 抵押给他人
          get_table_rows_params p;
@@ -1344,13 +1353,17 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
             asset net = asset::from_string( r.rows[i]["net_weight"].as_string() );
             asset cpu = asset::from_string( r.rows[i]["cpu_weight"].as_string() );
             asset a = net + cpu;
-            string s_tmp = a.to_string();
-            string total = s_tmp.substr(0, s_tmp.find_first_of(" "));
-            result += "," + total;
             delegate_to_others += a;
          }
+
+         string s_tmp = delegate_to_others.to_string();
+         string total = s_tmp.substr(0, s_tmp.find_first_of(" "));
+         result += "," + total;
+
          asset sum = liquid + self_delegate_bw + unstake + delegate_to_others;
-         result += "," + sum.to_string() + "\n";
+         string s_tmp = sum.to_string();
+         string all = s_tmp.substr(0, s_tmp.find_first_of(" "));
+         result += "," + all + "\n";
       }
       
    }
