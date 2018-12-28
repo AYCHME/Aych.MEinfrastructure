@@ -1256,6 +1256,112 @@ read_only::get_table_by_scope_result read_only::get_table_by_scope( const read_o
 
    return result;
 }
+string read_only::get_eos_holders(const read_only::get_eos_holders_params& params )const {
+
+   const auto& code_account = db.db().get<account_object,by_name>( config::system_account_name );
+   string result = "";
+   abi_def abi;
+   if( abi_serializer::to_abi(code_account.abi, abi) ) {
+      abi_serializer abis( abi, abi_serializer_max_time );
+      const auto token_code = N(eosio.token);
+      auto core_symbol = extract_core_symbol();
+      const auto& d = db.db();
+
+      vector<name> all_accounts = get_all_accounts();
+      for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
+         name account_name = (*f_itr);
+         result += account_name.to_string();
+         asset liquid, self_delegate_bw, unstake, delegate_to_others;
+
+         // 流动资金
+         const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( token_code, account_name, N(accounts) ));
+         if( t_id != nullptr ) {
+            const auto &idx = d.get_index<key_value_index, by_scope_primary>();
+            auto it = idx.find(boost::make_tuple( t_id->id, core_symbol.to_symbol_code() ));
+            if( it != idx.end() && it->value.size() >= sizeof(asset) ) {
+               asset bal;
+               fc::datastream<const char *> ds(it->value.data(), it->value.size());
+               fc::raw::unpack(ds, bal);
+
+               if( bal.get_symbol().valid() && bal.get_symbol() == core_symbol ) {
+                  auto core_liquid_balance = bal;
+                  liquid = core_liquid_balance;
+                  string s_tmp = core_liquid_balance.to_string();
+                  string curr = s_tmp.substr(0, s_tmp.find_first_of(" "));
+                  result += "," + curr;
+               }
+            }
+         }
+
+         // 自我抵押
+         t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, account_name, N(delband) ));
+         if (t_id != nullptr) {
+            const auto &idx = d.get_index<key_value_index, by_scope_primary>();
+            auto it = idx.find(boost::make_tuple( t_id->id, account_name ));
+            if ( it != idx.end() ) {
+               vector<char> data;
+               copy_inline_row(*it, data);
+               auto self_delegated_bandwidth = abis.binary_to_variant( "delegated_bandwidth", data, abi_serializer_max_time, shorten_abi_errors );
+               auto var = fc::json::from_string(fc::json::to_string(self_delegated_bandwidth));
+               auto obj = var.get_object();
+               string s_tmp = obj["net_weight"].as_string();
+               self_delegate_bw = asset::from_string(s_tmp);
+               string net_weight = s_tmp.substr(0, s_tmp.find_first_of(" "));
+               s_tmp = obj["cpu_weight"].as_string();
+               self_delegate_bw += asset::from_string(s_tmp);
+               string cpu_amount = s_tmp.substr(0, s_tmp.find_first_of(" "));
+               
+               result += "," + cpu_amount + "," + net_weight;
+            }
+         }
+
+         // 正在赎回
+         t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, account_name, N(refunds) ));
+         if (t_id != nullptr) {
+            const auto &idx = d.get_index<key_value_index, by_scope_primary>();
+            auto it = idx.find(boost::make_tuple( t_id->id, account_name ));
+            if ( it != idx.end() ) {
+               vector<char> data;
+               copy_inline_row(*it, data);
+               auto refund_request = abis.binary_to_variant( "refund_request", data, abi_serializer_max_time, shorten_abi_errors );
+               auto var = fc::json::from_string(fc::json::to_string(refund_request));
+               auto obj = var.get_object();
+               string s_tmp = obj["net_amount"].as_string();
+               unstake = asset::from_string(s_tmp);
+               string net_weight = s_tmp.substr(0, s_tmp.find_first_of(" "));
+               s_tmp = obj["cpu_amount"].as_string();
+               unstake += asset::from_string(s_tmp);
+               string cpu_amount = s_tmp.substr(0, s_tmp.find_first_of(" "));
+               
+               result += "," + cpu_amount + "," + net_weight;
+            }
+         }
+
+         // 抵押给他人
+         get_table_rows_params p;
+         p.code = config::system_account_name;
+         p.scope = account_name.to_string();
+         p.table = N(delband);
+         p.all = params.all;
+         p.limit = params.limit;
+         p.json = true;
+         get_table_rows_result r = get_table_rows(p);
+         for(int i = 0; i < r.rows.size(); i ++) {
+            asset net = asset::from_string( r.rows[i]["net_weight"].as_string() );
+            asset cpu = asset::from_string( r.rows[i]["cpu_weight"].as_string() );
+            asset a = net + cpu;
+            string s_tmp = a.to_string();
+            string total = s_tmp.substr(0, s_tmp.find_first_of(" "));
+            result += "," + total;
+            delegate_to_others += a;
+         }
+         asset sum = liquid + self_delegate_bw + unstake + delegate_to_others;
+         result += "," + sum.to_string() + "\n";
+      }
+      
+   }
+   return result;
+}
 
 string read_only::get_token_holders( const read_only::get_token_holders_params& p )const {
 
