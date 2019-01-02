@@ -1292,11 +1292,46 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
                   result += "," + curr;
                }
             }
+            else {
+               result += ",0.0000"; 
+            }
          }
          else {
             result += ",0.0000"; 
          }
 
+         // 抵押情况
+         bool b_delegate_to_self = false;
+         get_table_rows_params p;
+         p.code = config::system_account_name;
+         p.scope = account_name.to_string();
+         p.table = N(delband);
+         p.all = params.all;
+         p.limit = params.limit;
+         p.json = true;
+         get_table_rows_result r = get_table_rows(p);
+         for(int i = 0; i < r.rows.size(); i ++) {
+            string str_net = r.rows[i]["net_weight"].as_string();
+            string str_cpu = r.rows[i]["cpu_weight"].as_string();
+            // 抵押给自己
+            if (!b_delegate_to_self && r.rows[i]["from"].as_string() == r.rows[i]["to"].as_string()) {
+               b_delegate_to_self = true;
+               string net_weight = str_net.substr(0, str_net.find_first_of(" "));
+               string cpu_amount = str_cpu.substr(0, str_cpu.find_first_of(" "));
+               result += "," + cpu_amount + "," + net_weight; 
+            }
+            // 抵押给他人
+            else {
+               asset a = asset::from_string(str_net) + asset::from_string(str_cpu);
+               delegate_to_others += a;
+            }
+         }
+         // 占位
+         if (!b_delegate_to_self) {
+            result += ",0.0000,0.0000"; 
+         }
+
+         /*
          // 自我抵押
          t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, account_name, N(delband) ));
          if (t_id != nullptr) {
@@ -1317,10 +1352,14 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
                
                result += "," + cpu_amount + "," + net_weight;
             }
+            else {
+               result += ",0.0000,0.0000"; 
+            }
          }
          else {
             result += ",0.0000,0.0000"; 
          }
+         */
 
          // 正在赎回
          t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, account_name, N(refunds) ));
@@ -1342,31 +1381,18 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
                
                result += "," + cpu_amount + "," + net_weight;
             }
+            else {
+               result += ",0.0000,0.0000"; 
+            }
          }
          else {
             result += ",0.0000,0.0000"; 
          }
 
-         // 抵押给他人
-         get_table_rows_params p;
-         p.code = config::system_account_name;
-         p.scope = account_name.to_string();
-         p.table = N(delband);
-         p.all = params.all;
-         p.limit = params.limit;
-         p.json = true;
-         get_table_rows_result r = get_table_rows(p);
-         for(int i = 0; i < r.rows.size(); i ++) {
-            asset net = asset::from_string( r.rows[i]["net_weight"].as_string() );
-            asset cpu = asset::from_string( r.rows[i]["cpu_weight"].as_string() );
-            asset a = net + cpu;
-            delegate_to_others += a;
-         }
-
-         delegate_to_others -= self_delegate_bw; // 减去自身抵押的，就是给别人抵押的总值
+         //delegate_to_others -= self_delegate_bw; // 减去自身抵押的，就是给别人抵押的总值
          string s_tmp = delegate_to_others.to_string();
-         string total = s_tmp.substr(0, s_tmp.find_first_of(" "));
-         result += "," + total;
+         string total_delegate_to_others = s_tmp.substr(0, s_tmp.find_first_of(" "));
+         result += "," + total_delegate_to_others;
 
          asset sum = liquid + self_delegate_bw + unstake + delegate_to_others;
          s_tmp = sum.to_string();
