@@ -1336,6 +1336,7 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
             result += ",0.0000"; 
          }
 
+
          /*
          // 自我抵押
          t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, account_name, N(delband) ));
@@ -1395,7 +1396,6 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
          }
 
          //delegate_to_others -= self_delegate_bw; // 减去自身抵押的，就是给别人抵押的总值
-
          string s_tmp = delegate_to_others.to_string();
          string total_delegate_to_others = s_tmp.substr(0, s_tmp.find_first_of(" "));
          result += "," + total_delegate_to_others;
