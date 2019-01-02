@@ -1752,9 +1752,9 @@ vector<name> read_only::get_all_accounts() const {
    }
 
    // 额外的未收录到 userres 的系统账户
-   // 已收录的：eosio.forum, eosio.msig, eosio.ram, eosio.regram, eosio.stake, eosio.token, eosio.wrap
+   // 已收录的：eosio.forum, eosio.msig, eosio.ram, eosio.regram, eosio.stake, eosio.wrap
    // 未收录的：eosio.bpay, eosio.names, eosio.null, eosio.prods, eosio.ramfee, eosio.saving, eosio.unregd, eosio.vpay
-   vector<name> others = {N(eosio.bpay), N(eosio.names), N(eosio.null), N(eosio.prods), N(eosio.ramfee), N(eosio.saving), N(eosio.unregd), N(eosio.vpay)};
+   vector<name> others = {N(eosio.token), N(eosio.bpay), N(eosio.names), N(eosio.null), N(eosio.prods), N(eosio.ramfee), N(eosio.saving), N(eosio.unregd), N(eosio.vpay)};
    for (auto itr = others.begin(); itr != others.end(); itr ++) {
       auto b_f = find(all_accounts.begin(), all_accounts.end(), *itr);
       if (b_f == all_accounts.end()) {
