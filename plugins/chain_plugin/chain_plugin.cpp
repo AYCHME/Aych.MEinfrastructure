@@ -1306,17 +1306,18 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
          for(int i = 0; i < r.rows.size(); i ++) {
             string str_net = r.rows[i]["net_weight"].as_string();
             string str_cpu = r.rows[i]["cpu_weight"].as_string();
+            asset delegate_bw = asset::from_string(str_net) + asset::from_string(str_cpu);
             // 抵押给自己
             if (!b_delegate_to_self && r.rows[i]["from"].as_string() == r.rows[i]["to"].as_string()) {
                b_delegate_to_self = true;
                string net_weight = str_net.substr(0, str_net.find_first_of(" "));
                string cpu_amount = str_cpu.substr(0, str_cpu.find_first_of(" "));
                result += "," + cpu_amount + "," + net_weight; 
+               self_delegate_bw = delegate_bw;
             }
             // 抵押给他人
             else {
-               asset a = asset::from_string(str_net) + asset::from_string(str_cpu);
-               delegate_to_others += a;
+               delegate_to_others += delegate_bw;
             }
          }
          // 占位
