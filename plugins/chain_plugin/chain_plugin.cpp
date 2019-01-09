@@ -1414,8 +1414,10 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
    decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
    decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
 
-   lower = idx.lower_bound(boost::make_tuple(p.code, 0, N(accounts)));
-   upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, 0, 0));
+   // uint64_t scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) >> 8 );
+   name scope = ( eosio::chain::string_to_symbol( 0, boost::algorithm::to_upper_copy(p.symbol).c_str() ) );
+   lower = idx.lower_bound(boost::make_tuple(p.code, scope, N(accounts)));
+   upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, scope, 0));
 
    unsigned int count = 0;
    auto itr = lower;
@@ -1705,10 +1707,15 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
                continue;
             }
             auto stat = obj_it->value().as<get_currency_stats_result>();
+            // vector<string> v_tmp;
             string s_tmp = stat.supply.to_string();
+            // boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
             curr_supply = s_tmp.substr(0, s_tmp.find_first_of(" "));
 
+            // v_tmp.clear();
             s_tmp = stat.max_supply.to_string();
+            // boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
+            // max_supply = v_tmp[0];
             max_supply = s_tmp.substr(0, s_tmp.find_first_of(" "));
 
          }
