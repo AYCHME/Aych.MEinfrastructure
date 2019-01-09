@@ -1655,7 +1655,7 @@ vector<name> read_only::get_all_accounts() const {
 
 string read_only::get_all_token_contracts(const read_only::get_all_token_contracts_params& p) const {
    string result = "";
-   unsigned int count = 0; 
+   
    vector<name> all_accounts = get_all_accounts();
    for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
       
@@ -1743,9 +1743,22 @@ vector<name> read_only::get_all_accounts() const {
    unsigned int count = 0;
    auto itr = lower;
 
+vector<name> read_only::get_all_token_holders(name code) const {
+
+   const auto& d = db.db();
+   const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
+   decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
+   decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
+
+   lower = idx.lower_bound(boost::make_tuple(code, 0, N(accounts)));
+   upper = idx.lower_bound(boost::make_tuple((uint64_t)code + 1, 0, 0));
+
+   unsigned int count = 0;
+   auto itr = lower;
+
    vector<name> all_accounts;
    for (; itr != upper; ++itr) {
-      if (itr->table != N(accounts)) {
+      if (itr->table != N(userres)) {
          continue;
       }
       all_accounts.push_back(itr->scope);
@@ -2135,35 +2148,19 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
          p_tmp.code = *f_itr;
          p_tmp.symbol = *s_itr; 
 
-         try {
-            auto stats = get_currency_stats(p_tmp);
-            auto obj = stats.get_object();
-            auto obj_it = obj.find( symbol );
-            if (obj_it == obj.end()) {
-               continue;
-            }
-            auto stat = obj_it->value().as<get_currency_stats_result>();
-            // sprintf(tmp, "%lld", stat.supply.get_amount());
-            // curr_supply = tmp;
-            // sprintf(tmp, "%lld", stat.max_supply.get_amount());
-            // max_supply = tmp;
-            vector<string> v_tmp;
-            string s_tmp = stat.supply.to_string();
-            boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
-            curr_supply = v_tmp[0];
-
-            v_tmp.clear();
-            s_tmp = stat.max_supply.to_string();
-            boost::split(v_tmp, s_tmp, boost::is_any_of(" "));
-            max_supply = v_tmp[0];
-         }
-         catch(...) {
+         auto stats = get_currency_stats(p_tmp);
+         auto obj = stats.get_object();
+         auto obj_it = obj.find( symbol );
+         if (obj_it == obj.end()) {
             continue;
          }
-         result += symbol + "," + creator + "," + num_token_holders + "," + curr_supply + "," + max_supply + "\n";
-         if (++count == p.limit) {
-            break;
-         }
+         auto stat = obj_it->value().as<get_currency_stats_result>();
+         sprintf(tmp, "%lld", stat.supply.get_amount());
+         curr_supply = tmp;
+         sprintf(tmp, "%lld", stat.max_supply.get_amount());
+         max_supply = tmp;
+
+         result += symbol + "," + creator + "," + num_token_holders + "," + curr_supply + "," + max_supply;
       }
       result += "\n";
    }

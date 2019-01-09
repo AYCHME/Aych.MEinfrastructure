@@ -321,19 +321,19 @@ public:
    string get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
    
    struct get_all_token_contracts_params {
-<<<<<<< HEAD
       string      file;
-=======
->>>>>>> [新增]-获取全网代币列表
       uint32_t    limit = 10;
    };
 
    string get_all_token_contracts(const get_all_token_contracts_params& params) const;
    
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
    vector<name> get_all_token_holders(name code) const;
 >>>>>>> [新增]-获取全网代币列表
+=======
+>>>>>>> [修复]-获取代币持有人数量bug
 
    vector<name> get_all_accounts() const;
 
@@ -437,8 +437,12 @@ public:
 
    fc::variant get_currency_stats( const get_currency_stats_params& params )const;
 
+<<<<<<< HEAD
    unsigned int get_num_token_holders_by_symbol(const get_currency_stats_params& params, bool b_skip) const;
 
+=======
+   vector<name> get_all_token_holders(const get_currency_stats_params& params) const;
+>>>>>>> [修复]-获取代币持有人数量bug
 
    struct get_producers_params {
       bool        json = false;
