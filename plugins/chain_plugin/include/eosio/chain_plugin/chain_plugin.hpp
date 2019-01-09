@@ -342,13 +342,6 @@ public:
 
    string get_all_token_contracts(const get_all_token_contracts_params& params) const;
    
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-   vector<name> get_all_token_holders(name code) const;
->>>>>>> [新增]-获取全网代币列表
-=======
->>>>>>> [修复]-获取代币持有人数量bug
 
    vector<name> get_all_accounts() const;
 
@@ -360,19 +353,6 @@ public:
 
    vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
    vector<asset> get_currency_balance_without_assert( const get_currency_balance_params& params )const;
-
-   struct get_currency_balance_by_accounts_params {
-      name             code;
-      vector<name>             accounts;
-   };
-
-   struct get_currency_balance_by_accounts_result {
-      name  code;
-      name  account;
-      vector<asset>  balance;
-   };
-   
-   vector<get_currency_balance_by_accounts_result> get_currency_balance_by_accounts( const get_currency_balance_by_accounts_params& params )const;
 
    struct get_currency_balance_by_accounts_params {
       name             code;
@@ -401,12 +381,8 @@ public:
 
    fc::variant get_currency_stats( const get_currency_stats_params& params )const;
 
-<<<<<<< HEAD
    unsigned int get_num_token_holders_by_symbol(const get_currency_stats_params& params, bool b_skip) const;
 
-=======
-   vector<name> get_all_token_holders(const get_currency_stats_params& params) const;
->>>>>>> [修复]-获取代币持有人数量bug
 
    struct get_producers_params {
       bool        json = false;
