@@ -2070,6 +2070,26 @@ string read_only::get_all_token_contracts(const read_only::get_all_token_contrac
    return result;
 }
 
+// string read_only::get_all_token_contracts()const {
+//    string result = "";
+   
+//    vector<name> all_accounts = get_all_accounts();
+//    for (auto f_itr = all_accounts.cbegin(); f_itr != all_accounts.cend(); f_itr++) {
+      
+//       //判断是否是部署过合约
+//       const auto& a = db.get_account(*f_itr);
+//       string contract_deploy_timestamp = string(a.last_code_update);
+//       if (contract_deploy_timestamp == "1970-01-01T00:00:00.000") {
+//          continue;
+//       }
+//       //判断是否是发币合约
+
+
+
+//    }
+//    return result;
+// }
+
 // string read_only::get_all_tokens_holders()const {
 //    string result = "";
    
