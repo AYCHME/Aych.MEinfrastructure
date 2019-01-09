@@ -320,12 +320,19 @@ public:
    string get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
    
    struct get_all_token_contracts_params {
+<<<<<<< HEAD
       string      file;
+=======
+>>>>>>> [新增]-获取全网代币列表
       uint32_t    limit = 10;
    };
 
    string get_all_token_contracts(const get_all_token_contracts_params& params) const;
    
+<<<<<<< HEAD
+=======
+   vector<name> get_all_token_holders(name code) const;
+>>>>>>> [新增]-获取全网代币列表
 
    vector<name> get_all_accounts() const;
 
