@@ -336,6 +336,12 @@ public:
       bool        json = false;
    };
 
+   struct delegated_bandwidth {
+      account_name  from;
+      account_name  to;
+      asset         net_weight;
+      asset         cpu_weight;
+   };
    string get_delband_from_list( const get_delband_from_list_params& params )const;
 
 
@@ -856,6 +862,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more
 // FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
 FC_REFLECT( eosio::chain_apis::read_only::get_eos_holders_params, (all)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_delband_from_list_params, (code)(limit)(time_cost)(json));
+FC_REFLECT( eosio::chain_apis::read_only::delegated_bandwidth, (from)(to)(net_weight)(cpu_weight));
 FC_REFLECT( eosio::chain_apis::read_only::get_token_holders_params, (code)(symbol)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_all_token_contracts_params, (file)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_params, (code)(accounts));
