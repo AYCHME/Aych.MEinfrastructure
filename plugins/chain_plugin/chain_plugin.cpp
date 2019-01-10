@@ -1432,7 +1432,6 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
 
    for (auto itr = v_all_from_list.begin(); itr != v_all_from_list.end(); itr ++) {
 
-      bool b_delegate_to_self = false;
       get_table_rows_params p;
       p.code = config::system_account_name;
       p.scope = *itr;
@@ -1446,8 +1445,7 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
          string str_net = r.rows[i]["net_weight"].as_string();
          string str_cpu = r.rows[i]["cpu_weight"].as_string();
          //asset delegate_bw = asset::from_string(str_net) + asset::from_string(str_cpu);
-         if (r.rows[i]["from"].as_string() == r.rows[i]["to"].as_string()) {
-            b_delegate_to_self = true;
+         if (params.code.to_string() == r.rows[i]["to"].as_string()) {
             string net_weight = str_net.substr(0, str_net.find_first_of(" "));
             string cpu_amount = str_cpu.substr(0, str_cpu.find_first_of(" "));
             result += *itr + "," + cpu_amount + "," + net_weight; 
