@@ -1399,6 +1399,48 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
    return result;
 }
 
+string read_only::get_delband_from_list(const read_only::get_delband_from_list_params& params) const {
+
+   string result = "";
+
+   get_table_by_scope_all_params t_tmp;
+   t_tmp.code = params.code;
+   t_tmp.table = N(delband);
+   t_tmp.limit = params.limit;
+   //t_tmp.type = "symbol";
+   string all_from_list = get_table_by_scope_all(t_tmp); 
+   if (all_from_list == "") {
+      return result;
+   }
+
+   all_from_list.pop_back();   //除去末尾换行符
+   vector<string> v_all_from_list;
+   boost::split(v_all_from_list, all_from_list, boost::is_any_of("\n"));
+
+   for (auto itr = v_all_from_list.begin(); itr != v_all_from_list.end(); itr ++) {
+
+      bool b_delegate_to_self = false;
+      get_table_rows_params p;
+      p.code = config::system_account_name;
+      p.scope = *itr;
+      p.table = N(delband);
+      p.limit = 1;
+      p.lower_bound = params.code.to_string();
+      p.json = true;
+      get_table_rows_result r = get_table_rows(p);
+      // 下面这个循环一般只有最多一次
+      for(int i = 0; i < r.rows.size(); i ++, result += "\n") {
+         string str_net = r.rows[i]["net_weight"].as_string();
+         string str_cpu = r.rows[i]["cpu_weight"].as_string();
+         //asset delegate_bw = asset::from_string(str_net) + asset::from_string(str_cpu);
+         string net_weight = str_net.substr(0, str_net.find_first_of(" "));
+         string cpu_amount = str_cpu.substr(0, str_cpu.find_first_of(" "));
+         result += *itr + "," + cpu_amount + "," + net_weight; 
+      }
+   }
+   return result;
+}
+
 string read_only::get_token_holders( const read_only::get_token_holders_params& p )const {
 
    string result = "";
