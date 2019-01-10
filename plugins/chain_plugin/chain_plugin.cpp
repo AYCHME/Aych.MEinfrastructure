@@ -1434,6 +1434,7 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
    vector<string> v_all_from_list;
    boost::split(v_all_from_list, all_from_list, boost::is_any_of("\n"));
 
+   const abi_def abi = eosio::chain_apis::get_abi( db, config::system_account_name );
    get_table_rows_params p;
    p.code = config::system_account_name;
    p.table = N(delband);
@@ -1444,7 +1445,8 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
    for (auto itr = v_all_from_list.begin(); itr != v_all_from_list.end(); itr ++) {
 
       p.scope = *itr;
-      get_table_rows_result r = get_table_rows(p);
+      // get_table_rows_result r = get_table_rows(p);
+      get_table_rows_result r = get_table_rows_ex<key_value_index>(p, abi);
       if (r.rows.size() > 0) {
          if (p.json){
             string str_net = r.rows[0]["net_weight"].as_string();
