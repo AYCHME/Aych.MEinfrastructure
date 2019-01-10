@@ -1404,7 +1404,7 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
    string result = "";
 
    get_table_by_scope_all_params t_tmp;
-   t_tmp.code = params.code;
+   t_tmp.code = config::system_account_name;
    t_tmp.table = N(delband);
    t_tmp.limit = params.limit;
    //t_tmp.type = "symbol";
