@@ -1438,20 +1438,19 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
       p.table = N(delband);
       p.limit = 1;
       p.lower_bound = params.code.to_string();
+      p.upper_bound = params.code.to_string();
       p.json = true;
       get_table_rows_result r = get_table_rows(p);
-      // 下面这个循环一般只有最多一次
-      for(int i = 0; i < r.rows.size(); i ++, result += "\n") {
-         string str_net = r.rows[i]["net_weight"].as_string();
-         string str_cpu = r.rows[i]["cpu_weight"].as_string();
-         //asset delegate_bw = asset::from_string(str_net) + asset::from_string(str_cpu);
-         if (params.code.to_string() == r.rows[i]["to"].as_string()) {
-            string net_weight = str_net.substr(0, str_net.find_first_of(" "));
-            string cpu_amount = str_cpu.substr(0, str_cpu.find_first_of(" "));
-            result += *itr + "," + cpu_amount + "," + net_weight; 
-            continue;
-         }
+      if (r.rows.size() > 0) {
+         string str_net = r.rows[0]["net_weight"].as_string();
+         string str_cpu = r.rows[0]["cpu_weight"].as_string();
+         string net_weight = str_net.substr(0, str_net.find_first_of(" "));
+         string cpu_amount = str_cpu.substr(0, str_cpu.find_first_of(" "));
+         result += *itr + "," + cpu_amount + "," + net_weight + "\n"; 
       }
+   }
+   if (result != "") {
+      result.pop_back();   //除去末尾换行
    }
    return result;
 }
