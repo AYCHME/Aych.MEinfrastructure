@@ -1454,12 +1454,7 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
             result += *itr + "," + cpu_amount + "," + net_weight + "\n";
          }
          else {
-            struct delegated_bandwidth {
-               account_name  from;
-               account_name  to;
-               asset         net_weight;
-               asset         cpu_weight;
-            };
+           
             delegated_bandwidth tmp = r.rows[0].as<delegated_bandwidth>();
             string s_tmp = tmp.cpu_weight.to_string();
             string cpu_weight = s_tmp.substr(0, s_tmp.find_first_of(" "));
