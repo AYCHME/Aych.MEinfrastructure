@@ -1402,7 +1402,7 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
 string read_only::get_delband_from_list(const read_only::get_delband_from_list_params& params) const {
 
    string result = "";
-
+   auto cur_time0 = fc::time_point::now();
    get_table_by_scope_all_params t_tmp;
    t_tmp.code = config::system_account_name;
    t_tmp.table = N(delband);
@@ -1412,7 +1412,11 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
    if (all_from_list == "") {
       return result;
    }
-
+   auto cur_time1 = fc::time_point::now();
+   if (params.time_cost) {
+      result += "time cost: " + string((time_point)(cur_time1 - cur_time0)) + "\n";
+   }
+   
    all_from_list.pop_back();   //除去末尾换行符
    vector<string> v_all_from_list;
    boost::split(v_all_from_list, all_from_list, boost::is_any_of("\n"));
@@ -1434,10 +1438,17 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
          string net_weight = str_net.substr(0, str_net.find_first_of(" "));
          string cpu_amount = str_cpu.substr(0, str_cpu.find_first_of(" "));
          result += *itr + "," + cpu_amount + "," + net_weight + "\n"; 
+         auto cur_time2 = fc::time_point::now();
+         if (params.time_cost) {
+            result += "time cost: " + string((time_point)(cur_time2 - cur_time1)) + "\n";
+            cur_time1 = cur_time2;
+         }
       }
    }
-   if (result != "") {
-      result.pop_back();   //除去末尾换行
+
+   auto cur_time2 = fc::time_point::now();
+   if (params.time_cost) {
+      result += "time cost: " + string((time_point)(cur_time2 - cur_time1)) + "\n";
    }
    return result;
 }
