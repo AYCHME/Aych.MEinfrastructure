@@ -333,7 +333,6 @@ public:
       name        code;
       uint32_t    limit = 10;
       bool        time_cost = false;
-      bool        json = false;
    };
 
    struct delegated_bandwidth {
@@ -619,82 +618,29 @@ public:
       return result;
    }
 
-   template <typename IndexType>
-   read_only::get_table_rows_result get_table_rows_ex_simple( const read_only::get_table_rows_params& p )const {
-      read_only::get_table_rows_result result;
+   read_only::delegated_bandwidth get_delband( const read_only::get_table_rows_params& p )const {
+      read_only::delegated_bandwidth result;
       const auto& d = db.db();
 
       uint64_t scope = convert_to_type<uint64_t>(p.scope, "scope");
 
       const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, scope, p.table));
       if( t_id != nullptr ) {
-         const auto& idx = d.get_index<IndexType, chain::by_scope_primary>();
+         const auto& idx = d.get_index<chain::key_value_index, chain::by_scope_primary>();
          auto lower_bound_lookup_tuple = std::make_tuple( t_id->id, std::numeric_limits<uint64_t>::lowest() );
-         auto upper_bound_lookup_tuple = std::make_tuple( t_id->id, std::numeric_limits<uint64_t>::max() );
-
-         if( p.lower_bound.size() ) {
-            if( p.key_type == "name" ) {
-               name s(p.lower_bound);
-               std::get<1>(lower_bound_lookup_tuple) = s.value;
-            } else {
-               auto lv = convert_to_type<typename IndexType::value_type::key_type>( p.lower_bound, "lower_bound" );
-               std::get<1>(lower_bound_lookup_tuple) = lv;
-            }
-         }
-
-         if( p.upper_bound.size() ) {
-            if( p.key_type == "name" ) {
-               name s(p.upper_bound);
-               std::get<1>(upper_bound_lookup_tuple) = s.value;
-            } else {
-               auto uv = convert_to_type<typename IndexType::value_type::key_type>( p.upper_bound, "upper_bound" );
-               std::get<1>(upper_bound_lookup_tuple) = uv;
-            }
-         }
-
-         if( upper_bound_lookup_tuple < lower_bound_lookup_tuple  )
-            return result;
-
-         auto walk_table_row_range = [&]( auto itr, auto end_itr ) {
-            auto cur_time = fc::time_point::now();
-            auto end_time = cur_time + fc::microseconds(1000 * 10); /// 10ms max time
-            vector<char> data;
-            for( unsigned int count = 0; (cur_time <= end_time || p.all) && count < p.limit && itr != end_itr; ++count, ++itr, cur_time = fc::time_point::now() ) {
-               // copy_inline_row(*itr, data);
-
-               // fc::variant data_var;
-               // if( p.json ) {
-               //    data_var = abis.binary_to_variant( abis.get_table_type(p.table), data, abi_serializer_max_time, shorten_abi_errors );
-               // } else {
-               //    data_var = fc::variant( data );
-               // }
-
-               // if( p.show_payer && *p.show_payer ) {
-               //    result.rows.emplace_back( fc::mutable_variant_object("data", std::move(data_var))("payer", itr->payer) );
-               // } else {
-               //    result.rows.emplace_back( std::move(data_var) );
-               // }
-               auto obj = *itr;
-               if( obj.value.size() < sizeof(delegated_bandwidth)) {
-                  continue;
-               }
-               delegated_bandwidth cursor;
-               fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
-               fc::raw::unpack(ds, cursor);
-               result.rows.emplace_back( cursor );
-            }
-            if( itr != end_itr ) {
-               result.more = true;
-            }
-         };
+         auto lv = convert_to_type<typename chain::key_value_index::value_type::key_type>( p.lower_bound, "lower_bound" );
+         std::get<1>(lower_bound_lookup_tuple) = lv;
 
          auto lower = idx.lower_bound( lower_bound_lookup_tuple );
-         auto upper = idx.upper_bound( upper_bound_lookup_tuple );
-         if( p.reverse && *p.reverse ) {
-            walk_table_row_range( boost::make_reverse_iterator(upper), boost::make_reverse_iterator(lower) );
-         } else {
-            walk_table_row_range( lower, upper );
+         auto obj = *lower;
+         if( obj.value.size() < sizeof(delegated_bandwidth)) {
+            return result;
          }
+         delegated_bandwidth cursor;
+         fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
+         fc::raw::unpack(ds, cursor);
+         result = cursor;
+         
       }
       return result;
    }
@@ -941,7 +887,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
 // FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
 FC_REFLECT( eosio::chain_apis::read_only::get_eos_holders_params, (all)(limit));
-FC_REFLECT( eosio::chain_apis::read_only::get_delband_from_list_params, (code)(limit)(time_cost)(json));
+FC_REFLECT( eosio::chain_apis::read_only::get_delband_from_list_params, (code)(limit)(time_cost));
 FC_REFLECT( eosio::chain_apis::read_only::delegated_bandwidth, (from)(to)(net_weight)(cpu_weight));
 FC_REFLECT( eosio::chain_apis::read_only::get_token_holders_params, (code)(symbol)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_all_token_contracts_params, (file)(limit));

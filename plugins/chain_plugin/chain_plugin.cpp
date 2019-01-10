@@ -1438,39 +1438,24 @@ string read_only::get_delband_from_list(const read_only::get_delband_from_list_p
    get_table_rows_params p;
    p.code = config::system_account_name;
    p.table = N(delband);
-   p.limit = 1;
    p.lower_bound = params.code.to_string();
-   p.upper_bound = params.code.to_string();
-   p.json = params.json;
    for (auto itr = v_all_from_list.begin(); itr != v_all_from_list.end(); itr ++) {
 
       p.scope = *itr;
-      // get_table_rows_result r = get_table_rows(p);
-      // get_table_rows_result r = get_table_rows_ex<key_value_index>(p, abi);
-      get_table_rows_result r = get_table_rows_ex_simple<key_value_index>(p);
-      if (r.rows.size() > 0) {
-         if (p.json){
-            string str_net = r.rows[0]["net_weight"].as_string();
-            string str_cpu = r.rows[0]["cpu_weight"].as_string();
-            string net_weight = str_net.substr(0, str_net.find_first_of(" "));
-            string cpu_amount = str_cpu.substr(0, str_cpu.find_first_of(" "));
-            result += *itr + "," + cpu_amount + "," + net_weight + "\n";
-         }
-         else {
-           
-            delegated_bandwidth tmp = r.rows[0].as<delegated_bandwidth>();
-            string s_tmp = tmp.cpu_weight.to_string();
-            string cpu_weight = s_tmp.substr(0, s_tmp.find_first_of(" "));
-            s_tmp = tmp.net_weight.to_string();
-            string net_weight = s_tmp.substr(0, s_tmp.find_first_of(" "));
-            result += *itr + "," + cpu_weight + net_weight + "," + "\n"; 
-         }
-          
-         auto cur_time2 = fc::time_point::now();
-         if (params.time_cost) {
-            result += "time cost: " + string((time_point)(cur_time2 - cur_time1)) + "\n";
-            cur_time1 = cur_time2;
-         }
+      delegated_bandwidth tmp = get_delband(p);
+      if (!tmp.from) {
+         continue;
+      } 
+      string s_tmp = tmp.cpu_weight.to_string();
+      string cpu_weight = s_tmp.substr(0, s_tmp.find_first_of(" "));
+      s_tmp = tmp.net_weight.to_string();
+      string net_weight = s_tmp.substr(0, s_tmp.find_first_of(" "));
+      result += *itr + "," + cpu_weight + "," + net_weight + "\n"; 
+         
+      auto cur_time2 = fc::time_point::now();
+      if (params.time_cost) {
+         result += "time cost: " + string((time_point)(cur_time2 - cur_time1)) + "\n";
+         cur_time1 = cur_time2;
       }
    }
 
