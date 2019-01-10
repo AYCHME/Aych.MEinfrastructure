@@ -632,6 +632,10 @@ public:
          std::get<1>(lower_bound_lookup_tuple) = lv;
 
          auto lower = idx.lower_bound( lower_bound_lookup_tuple );
+         auto upper = idx.upper_bound( lower_bound_lookup_tuple );
+         if (lower == upper) {
+            return result;
+         }
          auto obj = *lower;
          if( obj.value.size() < sizeof(delegated_bandwidth)) {
             return result;
@@ -639,9 +643,6 @@ public:
          delegated_bandwidth cursor;
          fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
          fc::raw::unpack(ds, cursor);
-         if (!(cursor.cpu_weight.get_symbol().valid() && cursor.net_weight.get_symbol().valid())) {
-            return result;
-         }
          result = cursor;
          
       }
