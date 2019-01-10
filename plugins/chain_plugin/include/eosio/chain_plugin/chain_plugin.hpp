@@ -332,6 +332,7 @@ public:
    struct get_delband_from_list_params {
       name        code;
       uint32_t    limit = 10;
+      bool        time_cost = false;
    };
 
    string get_delband_from_list( const get_delband_from_list_params& params )const;
@@ -853,7 +854,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
 // FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
 FC_REFLECT( eosio::chain_apis::read_only::get_eos_holders_params, (all)(limit));
-FC_REFLECT( eosio::chain_apis::read_only::get_delband_from_list_params, (code)(limit));
+FC_REFLECT( eosio::chain_apis::read_only::get_delband_from_list_params, (code)(limit)(time_cost));
 FC_REFLECT( eosio::chain_apis::read_only::get_token_holders_params, (code)(symbol)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_all_token_contracts_params, (file)(limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_params, (code)(accounts));
