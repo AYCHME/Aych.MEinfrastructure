@@ -563,14 +563,14 @@ public:
       if( t_id != nullptr ) {
          const auto l = name{p.lower_bound};
          const auto& idx = d.get_index<chain::key_value_index, chain::by_scope_primary>();
-         decltype(t_id->id) next_tid(t_id->id._id + 1);
-         auto lower = idx.lower_bound(boost::make_tuple(t_id->id, l.value));
-         auto upper = idx.lower_bound(boost::make_tuple(next_tid, l.value));
-         // auto lower_bound_lookup_tuple = std::make_tuple( t_id->id, std::numeric_limits<uint64_t>::lowest() );
-         // auto lv = convert_to_type<typename chain::key_value_index::value_type::key_type>( p.lower_bound, "lower_bound" );
-         // std::get<1>(lower_bound_lookup_tuple) = lv;
-         // auto lower = idx.lower_bound( lower_bound_lookup_tuple );
-         // auto upper = idx.upper_bound( lower_bound_lookup_tuple );
+         // decltype(t_id->id) next_tid(t_id->id._id + 1);
+         // auto lower = idx.lower_bound(boost::make_tuple(t_id->id, l.value));
+         // auto upper = idx.lower_bound(boost::make_tuple(next_tid, l.value));
+         auto lower_bound_lookup_tuple = std::make_tuple( t_id->id, std::numeric_limits<uint64_t>::lowest() );
+         auto lv = convert_to_type<typename chain::key_value_index::value_type::key_type>( p.lower_bound, "lower_bound" );
+         std::get<1>(lower_bound_lookup_tuple) = lv;
+         auto lower = idx.lower_bound( lower_bound_lookup_tuple );
+         auto upper = idx.upper_bound( lower_bound_lookup_tuple );
          if (lower == upper) {
             return result;
          }
@@ -581,9 +581,9 @@ public:
          delegated_bandwidth cursor;
          fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
          fc::raw::unpack(ds, cursor);
-         if (!(cursor.cpu_weight.get_symbol().valid() && cursor.net_weight.get_symbol().valid())) {
-            return result;
-         }
+         // if (!(cursor.cpu_weight.get_symbol().valid() && cursor.net_weight.get_symbol().valid())) {
+         //    return result;
+         // }
          result = cursor;
          
       }
