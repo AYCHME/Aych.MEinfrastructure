@@ -581,6 +581,9 @@ public:
          delegated_bandwidth cursor;
          fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
          fc::raw::unpack(ds, cursor);
+         if (!(cursor.cpu_weight.get_symbol().valid() && cursor.net_weight.get_symbol().valid())) {
+            return result;
+         }
          result = cursor;
          
       }
