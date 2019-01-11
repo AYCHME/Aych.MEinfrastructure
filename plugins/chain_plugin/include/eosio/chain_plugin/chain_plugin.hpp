@@ -626,10 +626,11 @@ public:
 
       const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, scope, p.table));
       if( t_id != nullptr ) {
+         const auto l = name{p.lower_bound};
          const auto& idx = d.get_index<chain::key_value_index, chain::by_scope_primary>();
          decltype(t_id->id) next_tid(t_id->id._id + 1);
-         auto lower = idx.lower_bound(boost::make_tuple(t_id->id));
-         auto upper = idx.lower_bound(boost::make_tuple(next_tid));
+         auto lower = idx.lower_bound(boost::make_tuple(t_id->id, l.value));
+         auto upper = idx.lower_bound(boost::make_tuple(next_tid, l.value));
          // auto lower_bound_lookup_tuple = std::make_tuple( t_id->id, std::numeric_limits<uint64_t>::lowest() );
          // auto lv = convert_to_type<typename chain::key_value_index::value_type::key_type>( p.lower_bound, "lower_bound" );
          // std::get<1>(lower_bound_lookup_tuple) = lv;
