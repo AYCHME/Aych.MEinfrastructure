@@ -1257,6 +1257,34 @@ read_only::get_table_by_scope_result read_only::get_table_by_scope( const read_o
 
    return result;
 }
+
+string read_only::get_ram_holders(const read_only::get_ram_holders_params& params)const {
+   string result = "";
+
+   const auto& d = db.db();
+   const auto& rm = db.get_resource_limits_manager();
+
+   vector<name> all_accounts = get_all_accounts();
+   unsigned int count = 0;
+   for (auto f_itr = all_accounts.cbegin(); count < params.limit && f_itr != all_accounts.cend(); f_itr ++, count ++) {
+
+      name account_name = (*f_itr);
+      int64_t  ram_quota  = 0;
+      int64_t  ram_usage = 0;
+      int64_t  net_weight = 0;
+      int64_t  cpu_weight = 0;
+      rm.get_account_limits( account_name, ram_quota, net_weight, cpu_weight );
+      ram_usage = rm.get_account_ram_usage( account_name );
+      result += account_name.to_string();
+      result += ",";
+      result += boost::lexical_cast<std::string>(ram_quota);
+      result += ",";
+      result += boost::lexical_cast<std::string>(ram_usage);
+      result += "\n";
+   }
+   return result;
+}
+
 string read_only::get_eos_holders(const read_only::get_eos_holders_params& params )const {
 
    const auto& code_account = db.db().get<account_object,by_name>( config::system_account_name );
