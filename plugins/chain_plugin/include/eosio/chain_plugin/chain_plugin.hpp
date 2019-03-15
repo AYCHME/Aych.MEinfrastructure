@@ -344,6 +344,11 @@ public:
    string get_delband_from_list( const get_delband_from_list_params& params )const;
 
 
+   struct get_ram_holders_params {
+      uint32_t    limit = 10;
+   }; 
+   string get_ram_holders(const get_ram_holders_params& params)const; 
+
    struct get_eos_holders_params {
       bool        all = false;
       uint32_t    limit = 10;
@@ -828,6 +833,7 @@ FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
 // FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
 FC_REFLECT( eosio::chain_apis::read_only::get_eos_holders_params, (all)(limit));
+FC_REFLECT( eosio::chain_apis::read_only::get_ram_holders_params, (limit));
 FC_REFLECT( eosio::chain_apis::read_only::get_delband_from_list_params, (code)(limit)(time_cost));
 FC_REFLECT( eosio::chain_apis::read_only::delegated_bandwidth, (from)(to)(net_weight)(cpu_weight));
 FC_REFLECT( eosio::chain_apis::read_only::get_token_holders_params, (code)(symbol)(limit));
