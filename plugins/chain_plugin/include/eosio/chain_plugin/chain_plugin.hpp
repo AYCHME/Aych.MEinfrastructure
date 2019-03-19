@@ -320,15 +320,6 @@ public:
    //get_table_by_scope_all_result get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
    string get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
 
-   struct get_token_holders_params {
-      name        code;
-      string      symbol;
-      uint32_t    limit = 10;
-   };
-
-   string get_token_holders( const get_token_holders_params& params )const;
-   
-
    struct get_delband_from_list_params {
       name        code;
       uint32_t    limit = 10;
@@ -348,23 +339,6 @@ public:
       uint32_t    limit = 10;
    }; 
    string get_ram_holders(const get_ram_holders_params& params)const; 
-
-   struct get_eos_holders_params {
-      bool        all = false;
-      uint32_t    limit = 10;
-   }; 
-   string get_eos_holders(const get_eos_holders_params& params)const; 
-
-   struct get_all_token_contracts_params {
-      string      file;
-      uint32_t    limit = 10;
-   };
-
-   string get_all_token_contracts(const get_all_token_contracts_params& params) const;
-   
-   vector<name> get_all_token_holders(name code) const;
-
-   vector<name> get_all_accounts() const;
 
    struct get_token_holders_params {
       name        code;
@@ -399,45 +373,6 @@ public:
 
    vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
    vector<asset> get_currency_balance_without_assert( const get_currency_balance_params& params )const;
-
-   struct get_currency_balance_by_accounts_params {
-      name             code;
-      vector<name>             accounts;
-   };
-
-   struct get_currency_balance_by_accounts_result {
-      name  code;
-      name  account;
-      vector<asset>  balance;
-   };
-   
-   vector<get_currency_balance_by_accounts_result> get_currency_balance_by_accounts( const get_currency_balance_by_accounts_params& params )const;
-
-   struct get_currency_balance_by_accounts_params {
-      name             code;
-      vector<name>             accounts;
-   };
-
-   struct get_currency_balance_by_accounts_result {
-      name  code;
-      name  account;
-      vector<asset>  balance;
-   };
-   
-   vector<get_currency_balance_by_accounts_result> get_currency_balance_by_accounts( const get_currency_balance_by_accounts_params& params )const;
-
-   struct get_currency_balance_by_accounts_params {
-      name             code;
-      vector<name>             accounts;
-   };
-
-   struct get_currency_balance_by_accounts_result {
-      name  code;
-      name  account;
-      vector<asset>  balance;
-   };
-   
-   vector<get_currency_balance_by_accounts_result> get_currency_balance_by_accounts( const get_currency_balance_by_accounts_params& params )const;
 
    struct get_currency_balance_by_accounts_params {
       name             code;
