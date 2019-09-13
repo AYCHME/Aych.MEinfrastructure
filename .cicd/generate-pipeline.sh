@@ -133,7 +133,7 @@ EOF
             - 'registry_1'
             - 'registry_2'
           pre-execute-ping-sleep: "8.8.8.8"
-          pre-commands: 
+          pre-commands:
             - "git clone git@github.com:EOSIO/mac-anka-fleet.git && cd mac-anka-fleet && . ./ensure-tag.bash -u 12 -r 25G -a '-n'"
     env:
       REPO: ${BUILDKITE_PULL_REQUEST_REPO:-$BUILDKITE_REPO}
@@ -442,7 +442,7 @@ done
 if ( [[ ! $PINNED == false ]] ); then
         cat <<EOF
   - label: ":pipeline: Multiversion Test"
-    command: 
+    command:
       - "buildkite-agent artifact download build.tar.gz . --step ':ubuntu: Ubuntu 18.04 - Build' && tar -xzf build.tar.gz"
       - ./.cicd/test.sh .cicd/multiversion.sh
     env:
