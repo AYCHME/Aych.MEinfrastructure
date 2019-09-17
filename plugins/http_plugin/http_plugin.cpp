@@ -311,7 +311,10 @@ namespace eosio {
                         handler_itr->second( resource, body,
                               [&ioc, &bytes_in_flight, con]( int code, fc::variant response_body ) {
                            boost::asio::post( ioc, [response_body{std::move( response_body )}, &bytes_in_flight, con, code]() mutable {
-                              std::string json = fc::json::to_string( response_body );
+                              // std::string json = fc::json::to_string( response_body );
+                              std::string json = response_body.get_type() == fc::variant::string_type ?
+                                      response_body.get_string() :
+                                      fc::json::to_string(response_body);
                               response_body.clear();
                               const size_t json_size = json.size();
                               bytes_in_flight += json_size;
