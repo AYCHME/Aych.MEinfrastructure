@@ -353,7 +353,10 @@ namespace eosio {
                                   con, code, max_response_time=max_response_time]() mutable {
                                  std::string json;
                                  try {
-                                    json = fc::json::to_string( response_body, fc::time_point::now() + max_response_time );
+                                    // json = fc::json::to_string( response_body, fc::time_point::now() + max_response_time );
+                                    json = response_body.get_type() == fc::variant::string_type ?
+                                           response_body.get_string() :
+                                           fc::json::to_string( response_body, fc::time_point::now() + max_response_time );
                                     con->set_body( std::move( json ) );
                                     con->set_status( websocketpp::http::status_code::value( code ) );
                                  } catch( ... ) {
@@ -434,7 +437,7 @@ namespace eosio {
       else
          cfg.add_options()
             ("unix-socket-path", bpo::value<string>(),
-             "The filename (relative to data-dir) to create a unix socket for HTTP RPC; set blank to disable.");   
+             "The filename (relative to data-dir) to create a unix socket for HTTP RPC; set blank to disable.");
 #endif
 
       if(current_http_plugin_defaults.default_http_port)
