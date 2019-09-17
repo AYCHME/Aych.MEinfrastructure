@@ -1,3 +1,7 @@
+/**
+ *  @file
+ *  @copyright defined in eos/LICENSE
+ */
 #pragma once
 #include <appbase/application.hpp>
 #include <eosio/chain/asset.hpp>
@@ -300,6 +304,7 @@ public:
       string      encode_type{"dec"}; //dec, hex , default=dec
       optional<bool>  reverse;
       optional<bool>  show_payer; // show RAM pyer
+      optional<bool>  all = false;
     };
 
    struct get_table_rows_result {
@@ -335,15 +340,61 @@ public:
    struct get_table_by_scope_all_params {
       name        code; // mandatory
       name        table = 0; // optional, act as filter
-      string      lower_bound; // lower bound of scope, optional
-      string      upper_bound; // upper bound of scope, optional
+      string      type; // type of scope
+      string      detail; // detail info of scope
       uint32_t    limit = 10;
    };
-   struct get_table_by_scope_all_result {
-      string      scope_txt; ///< fill lower_bound with this value to fetch more rows
+   // struct get_table_by_scope_all_result {
+   //    string      scope_txt; ///< fill lower_bound with this value to fetch more rows
+   // };
+
+   //get_table_by_scope_all_result get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
+   string get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
+
+   struct get_delband_from_list_params {
+      name        code;
+      uint32_t    limit = 10;
+      bool        time_cost = false;
    };
 
-   get_table_by_scope_all_result get_table_by_scope_all( const get_table_by_scope_all_params& params )const;
+   struct delegated_bandwidth {
+      account_name  from;
+      account_name  to;
+      asset         net_weight;
+      asset         cpu_weight;
+   };
+   string get_delband_from_list( const get_delband_from_list_params& params )const;
+
+
+   struct get_ram_holders_params {
+      uint32_t    limit = 10;
+   };
+   string get_ram_holders(const get_ram_holders_params& params)const;
+
+   struct get_token_holders_params {
+      name        code;
+      string      symbol;
+      uint32_t    limit = 10;
+   };
+
+   string get_token_holders( const get_token_holders_params& params )const;
+
+
+   struct get_eos_holders_params {
+      bool        all = false;
+      uint32_t    limit = 10;
+   };
+   string get_eos_holders(const get_eos_holders_params& params)const;
+
+   struct get_all_token_contracts_params {
+      string      file;
+      uint32_t    limit = 10;
+   };
+
+   string get_all_token_contracts(const get_all_token_contracts_params& params) const;
+
+
+   vector<name> get_all_accounts() const;
 
    struct get_currency_balance_params {
       name             code;
@@ -352,6 +403,20 @@ public:
    };
 
    vector<asset> get_currency_balance( const get_currency_balance_params& params )const;
+   vector<asset> get_currency_balance_without_assert( const get_currency_balance_params& params )const;
+
+   struct get_currency_balance_by_accounts_params {
+      name             code;
+      vector<name>             accounts;
+   };
+
+   struct get_currency_balance_by_accounts_result {
+      name  code;
+      name  account;
+      vector<asset>  balance;
+   };
+
+   vector<get_currency_balance_by_accounts_result> get_currency_balance_by_accounts( const get_currency_balance_by_accounts_params& params )const;
 
    struct get_currency_stats_params {
       name           code;
@@ -366,6 +431,9 @@ public:
    };
 
    fc::variant get_currency_stats( const get_currency_stats_params& params )const;
+
+   unsigned int get_num_token_holders_by_symbol(const get_currency_stats_params& params, bool b_skip) const;
+
 
    struct get_producers_params {
       bool        json = false;
@@ -485,7 +553,7 @@ public:
             auto cur_time = fc::time_point::now();
             auto end_time = cur_time + fc::microseconds(1000 * 10); /// 10ms max time
             vector<char> data;
-            for( unsigned int count = 0; cur_time <= end_time && count < p.limit && itr != end_itr; ++itr, cur_time = fc::time_point::now() ) {
+            for( unsigned int count = 0; (cur_time <= end_time || p.all) && count < p.limit && itr != end_itr; ++itr, cur_time = fc::time_point::now() ) {
                const auto* itr2 = d.find<chain::key_value_object, chain::by_scope_primary>( boost::make_tuple(t_id->id, itr->primary_key) );
                if( itr2 == nullptr ) continue;
                copy_inline_row(*itr2, data);
@@ -518,6 +586,43 @@ public:
          } else {
             walk_table_row_range( lower, upper );
          }
+      }
+      return result;
+   }
+
+   read_only::delegated_bandwidth get_delband( const read_only::get_table_rows_params& p )const {
+      read_only::delegated_bandwidth result;
+      const auto& d = db.db();
+
+      uint64_t scope = convert_to_type<uint64_t>(p.scope, "scope");
+
+      const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, scope, p.table));
+      if( t_id != nullptr ) {
+         const auto l = name{p.lower_bound};
+         const auto& idx = d.get_index<chain::key_value_index, chain::by_scope_primary>();
+         // decltype(t_id->id) next_tid(t_id->id._id + 1);
+         // auto lower = idx.lower_bound(boost::make_tuple(t_id->id, l.value));
+         // auto upper = idx.lower_bound(boost::make_tuple(next_tid, l.value));
+         auto lower_bound_lookup_tuple = std::make_tuple( t_id->id, std::numeric_limits<uint64_t>::lowest() );
+         auto lv = convert_to_type<typename chain::key_value_index::value_type::key_type>( p.lower_bound, "lower_bound" );
+         std::get<1>(lower_bound_lookup_tuple) = lv;
+         auto lower = idx.lower_bound( lower_bound_lookup_tuple );
+         auto upper = idx.upper_bound( lower_bound_lookup_tuple );
+         if (lower == upper) {
+            return result;
+         }
+         auto obj = *lower;
+         if( obj.value.size() < sizeof(delegated_bandwidth)) {
+            return result;
+         }
+         delegated_bandwidth cursor;
+         fc::datastream<const char *> ds(obj.value.data(), obj.value.size());
+         fc::raw::unpack(ds, cursor);
+         // if (!(cursor.cpu_weight.get_symbol().valid() && cursor.net_weight.get_symbol().valid())) {
+         //    return result;
+         // }
+         result = cursor;
+
       }
       return result;
    }
@@ -564,7 +669,7 @@ public:
             auto cur_time = fc::time_point::now();
             auto end_time = cur_time + fc::microseconds(1000 * 10); /// 10ms max time
             vector<char> data;
-            for( unsigned int count = 0; cur_time <= end_time && count < p.limit && itr != end_itr; ++count, ++itr, cur_time = fc::time_point::now() ) {
+            for( unsigned int count = 0; (cur_time <= end_time || p.all) && count < p.limit && itr != end_itr; ++count, ++itr, cur_time = fc::time_point::now() ) {
                copy_inline_row(*itr, data);
 
                fc::variant data_var;
@@ -658,7 +763,7 @@ public:
             // which is the format used by secondary index
             uint8_t buffer[32];
             memcpy(buffer, v.data(), 32);
-            fixed_bytes<32> fb(buffer); 
+            fixed_bytes<32> fb(buffer);
             return chain::key256_t(fb.get_array());
         };
      }
@@ -676,7 +781,7 @@ public:
             // which is the format used by secondary index
             uint8_t buffer[20];
             memcpy(buffer, v.data(), 20);
-            fixed_bytes<20> fb(buffer); 
+            fixed_bytes<20> fb(buffer);
             return chain::key256_t(fb.get_array());
         };
      }
@@ -774,15 +879,22 @@ FC_REFLECT(eosio::chain_apis::read_only::get_block_header_state_params, (block_n
 
 FC_REFLECT( eosio::chain_apis::read_write::push_transaction_results, (transaction_id)(processed) )
 
-FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_params, (json)(code)(scope)(table)(table_key)(lower_bound)(upper_bound)(limit)(key_type)(index_position)(encode_type)(reverse)(show_payer) )
+FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_params, (json)(code)(scope)(table)(table_key)(lower_bound)(upper_bound)(limit)(key_type)(index_position)(encode_type)(reverse)(show_payer)(all) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_rows_result, (rows)(more)(next_key) );
 
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_params, (code)(table)(lower_bound)(upper_bound)(limit)(reverse) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result_row, (code)(scope)(table)(payer)(count));
-FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(table)(lower_bound)(upper_bound)(limit) )
+FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_params, (code)(table)(type)(detail)(limit) )
 FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_result, (rows)(more) );
-FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
-
+// FC_REFLECT( eosio::chain_apis::read_only::get_table_by_scope_all_result, (scope_txt) );
+FC_REFLECT( eosio::chain_apis::read_only::get_eos_holders_params, (all)(limit));
+FC_REFLECT( eosio::chain_apis::read_only::get_ram_holders_params, (limit));
+FC_REFLECT( eosio::chain_apis::read_only::get_delband_from_list_params, (code)(limit)(time_cost));
+FC_REFLECT( eosio::chain_apis::read_only::delegated_bandwidth, (from)(to)(net_weight)(cpu_weight));
+FC_REFLECT( eosio::chain_apis::read_only::get_token_holders_params, (code)(symbol)(limit));
+FC_REFLECT( eosio::chain_apis::read_only::get_all_token_contracts_params, (file)(limit));
+FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_params, (code)(accounts));
+FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_by_accounts_result, (code)(account)(balance));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_balance_params, (code)(account)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_params, (code)(symbol));
 FC_REFLECT( eosio::chain_apis::read_only::get_currency_stats_result, (supply)(max_supply)(issuer));

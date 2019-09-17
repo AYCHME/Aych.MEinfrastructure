@@ -31,6 +31,19 @@ struct async_result_visitor : public fc::visitor<fc::variant> {
    }
 };
 
+#define RAW_CALL(api_name, api_handle, api_namespace, call_name, http_response_code) \
+{std::string("/v1/" #api_name "/" #call_name), \
+   [api_handle](string, string body, url_response_callback cb) mutable { \
+          api_handle.validate(); \
+          try { \
+             if (body.empty()) body = "{}"; \
+             auto result = api_handle.call_name(fc::json::from_string(body).as<api_namespace::call_name ## _params>()); \
+             cb(http_response_code, (result)); \
+          } catch (...) { \
+             http_plugin::handle_exception(#api_name, #call_name, body, cb); \
+          } \
+       }}
+
 #define CALL(api_name, api_handle, api_namespace, call_name, http_response_code) \
 {std::string("/v1/" #api_name "/" #call_name), \
    [api_handle](string, string body, url_response_callback cb) mutable { \
@@ -65,6 +78,7 @@ struct async_result_visitor : public fc::visitor<fc::variant> {
 }
 
 #define CHAIN_RO_CALL(call_name, http_response_code) CALL(chain, ro_api, chain_apis::read_only, call_name, http_response_code)
+#define CHAIN_RO_RAW_CALL(call_name, http_response_code) RAW_CALL(chain, ro_api, chain_apis::read_only, call_name, http_response_code)
 #define CHAIN_RW_CALL(call_name, http_response_code) CALL(chain, rw_api, chain_apis::read_write, call_name, http_response_code)
 #define CHAIN_RO_CALL_ASYNC(call_name, call_result, http_response_code) CALL_ASYNC(chain, ro_api, chain_apis::read_only, call_name, call_result, http_response_code)
 #define CHAIN_RW_CALL_ASYNC(call_name, call_result, http_response_code) CALL_ASYNC(chain, rw_api, chain_apis::read_write, call_name, call_result, http_response_code)
@@ -91,8 +105,14 @@ void chain_api_plugin::plugin_startup() {
       CHAIN_RO_CALL(get_raw_abi, 200),
       CHAIN_RO_CALL(get_table_rows, 200),
       CHAIN_RO_CALL(get_table_by_scope, 200),
-      CHAIN_RO_CALL(get_table_by_scope_all, 200),
+      CHAIN_RO_RAW_CALL(get_table_by_scope_all, 200),
+      CHAIN_RO_RAW_CALL(get_all_token_contracts, 200),
+      CHAIN_RO_RAW_CALL(get_token_holders, 200),
+      CHAIN_RO_RAW_CALL(get_ram_holders, 200),
+      CHAIN_RO_RAW_CALL(get_delband_from_list, 200),
+      CHAIN_RO_RAW_CALL(get_eos_holders, 200),
       CHAIN_RO_CALL(get_currency_balance, 200),
+      CHAIN_RO_CALL(get_currency_balance_by_accounts, 200),
       CHAIN_RO_CALL(get_currency_stats, 200),
       CHAIN_RO_CALL(get_producers, 200),
       CHAIN_RO_CALL(get_producer_schedule, 200),
