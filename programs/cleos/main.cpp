@@ -327,11 +327,12 @@ fc::variant push_transaction( signed_transaction& trx, packed_transaction::compr
       trx.max_cpu_usage_ms = tx_max_cpu_usage;
       trx.max_net_usage_words = (tx_max_net_usage + 7)/8;
       trx.delay_sec = delaysec;
-   }
 
-   if (!tx_skip_sign) {
-      auto required_keys = determine_required_keys(trx);
-      sign_transaction(trx, required_keys, info.chain_id);
+      if (!tx_skip_sign) {
+         auto required_keys = determine_required_keys(trx);
+         sign_transaction(trx, required_keys, info.chain_id);
+      }
+
    }
 
    if (!tx_dont_broadcast) {
@@ -2395,7 +2396,6 @@ int main( int argc, char** argv ) {
    setlocale(LC_ALL, "");
    bindtextdomain(locale_domain, locale_path);
    textdomain(locale_domain);
-   fc::logger::get(DEFAULT_LOGGER).set_log_level(fc::log_level::debug);
    context = eosio::client::http::create_http_context();
    wallet_url = default_wallet_url;
 
