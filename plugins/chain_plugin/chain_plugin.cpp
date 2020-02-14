@@ -1901,12 +1901,12 @@ string read_only::get_eos_holders(const read_only::get_eos_holders_params& param
          t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple( config::system_account_name, account_name, N(refunds) ));
          if (t_id != nullptr) {
             const auto &idx = d.get_index<key_value_index, by_scope_primary>();
-            auto it = idx.find(boost::make_tuple( t_id->id, account_name ));
+            auto it = idx.find(boost::make_tuple( t_id->id, account_name.to_uint64_t() ));
             if ( it != idx.end() ) {
                vector<char> data;
                copy_inline_row(*it, data);
                auto refund_request = abis.binary_to_variant( "refund_request", data, abi_serializer_max_time, shorten_abi_errors );
-               auto var = fc::json::from_string(fc::json::to_string(refund_request));
+               auto var = fc::json::from_string(fc::json::to_string(refund_request, fc::time_point::now() + fc::exception::format_time_limit));
                auto obj = var.get_object();
                string s_tmp = obj["net_amount"].as_string();
                unstake = asset::from_string(s_tmp);
@@ -1999,11 +1999,11 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
    string result = "";
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
-   decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
-   decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
+   // decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
+   // decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
 
-   lower = idx.lower_bound(boost::make_tuple(p.code, 0, N(accounts)));
-   upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, 0, 0));
+   auto lower = idx.lower_bound(boost::make_tuple(p.code, name(0), N(accounts)));
+   auto upper = idx.lower_bound(boost::make_tuple(name(p.code.to_uint64_t() + 1), name(0), name(0)));
 
    unsigned int count = 0;
    auto itr = lower;
@@ -2073,11 +2073,11 @@ string read_only::get_token_holders( const read_only::get_token_holders_params& 
 string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_all_params& p )const {
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
-   decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
-   decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
+   // decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
+   // decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
 
-   lower = idx.lower_bound(boost::make_tuple(p.code, 0, p.table));
-   upper = idx.lower_bound(boost::make_tuple((uint64_t)p.code + 1, 0, 0));
+   auto lower = idx.lower_bound(boost::make_tuple(p.code, name(0), p.table));
+   auto upper = idx.lower_bound(boost::make_tuple(name(p.code.to_uint64_t() + 1), name(0), name(0)));
 
    unsigned int count = 0;
    auto itr = lower;
@@ -2089,7 +2089,7 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
 
       string scope = "";
       if (p.type == "symbol") {
-         uint64_t v = uint64_t(itr->scope);
+         uint64_t v = itr->scope.to_uint64_t();
          // v >>= 8;
          while (v > 0) {
             char c = v & 0xFF;
@@ -2124,7 +2124,7 @@ string read_only::get_table_by_scope_all( const read_only::get_table_by_scope_al
 vector<asset> read_only::get_currency_balance_without_assert( const read_only::get_currency_balance_params& p )const {
 
    const abi_def abi = eosio::chain_apis::get_abi( db, p.code );
-   auto table_type = get_table_type( abi, "accounts" );
+   auto table_type = get_table_type( abi, name("accounts") );
 
    vector<asset> results;
    walk_key_value_table(p.code, p.account, N(accounts), [&](const key_value_object& obj){
@@ -2155,11 +2155,11 @@ unsigned int read_only::get_num_token_holders_by_symbol(const get_currency_stats
 
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
-   decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
-   decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
+   // decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
+   // decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
 
-   lower = idx.lower_bound(boost::make_tuple(p.code, 0, N(accounts)));
-   upper = idx.lower_bound(boost::make_tuple((uint64_t)(p.code) + 1, 0, 0));
+   auto lower = idx.lower_bound(boost::make_tuple(p.code, name(0), N(accounts)));
+   auto upper = idx.lower_bound(boost::make_tuple(name(p.code.to_uint64_t() + 1), name(0), name(0)));
 
    unsigned int count = 0;
    auto itr = lower;
@@ -2200,11 +2200,11 @@ vector<name> read_only::get_all_accounts() const {
 
    const auto& d = db.db();
    const auto& idx = d.get_index<chain::table_id_multi_index, chain::by_code_scope_table>();
-   decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
-   decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
+   // decltype(idx.lower_bound(boost::make_tuple(0, 0, 0))) lower;
+   // decltype(idx.upper_bound(boost::make_tuple(0, 0, 0))) upper;
 
-   lower = idx.lower_bound(boost::make_tuple(N(eosio), 0, N(userres)));
-   upper = idx.lower_bound(boost::make_tuple((uint64_t)(N(eosio)) + 1, 0, 0));
+   auto lower = idx.lower_bound(boost::make_tuple(N(eosio), name(0), N(userres)));
+   auto upper = idx.lower_bound(boost::make_tuple(name(N(eosio).to_uint64_t() + 1), name(0), name(0)));
 
    unsigned int count = 0;
    auto itr = lower;

@@ -339,7 +339,7 @@ public:
 
    struct get_table_by_scope_all_params {
       name        code; // mandatory
-      name        table = 0; // optional, act as filter
+      name        table; // optional, act as filter
       string      type; // type of scope
       string      detail; // detail info of scope
       uint32_t    limit = 10;
@@ -596,7 +596,7 @@ public:
 
       uint64_t scope = convert_to_type<uint64_t>(p.scope, "scope");
 
-      const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, scope, p.table));
+      const auto* t_id = d.find<chain::table_id_object, chain::by_code_scope_table>(boost::make_tuple(p.code, name(scope), p.table));
       if( t_id != nullptr ) {
          const auto l = name{p.lower_bound};
          const auto& idx = d.get_index<chain::key_value_index, chain::by_scope_primary>();
